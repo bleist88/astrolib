@@ -51,7 +51,7 @@ def read( file_name, dtype=None ):
 
     ## Retrieve body of text and the dtype a text file.
 
-    body, comments, fdtype   = Io.parse_file( file_name )
+    body, comments, fdtype   = io.parse_file( file_name )
 
     if dtype is None:
         dtype   = fdtype
@@ -117,7 +117,7 @@ def write(
 
     ## Determine line format from array.
 
-    dstring     = Io.get_dstring(
+    dstring     = io.get_dstring(
         array.dtype, space=space, sci=sci, ipad=ipad, fpad=fpad, spad=spad
     )
 

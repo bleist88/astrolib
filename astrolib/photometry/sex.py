@@ -48,7 +48,7 @@ def write_sex( image_manager, bsex_file, sex_file ):
 
     ##  Read in both .bsex and .sex files.
 
-    bsex_configs     = Io.get_configs( bsex_file )
+    bsex_configs     = io.get_configs( bsex_file )
 
     ##  Handle file names.
 
@@ -108,7 +108,7 @@ def write_sex( image_manager, bsex_file, sex_file ):
 
     print( "Writing %s..." % sex_file )
 
-    Io.write_configs( sex_file, sex_configs )
+    io.write_configs( sex_file, sex_configs )
 
 ##  ============================================================================
 

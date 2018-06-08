@@ -23,7 +23,7 @@ class Catter:
 
         ## Read the data.
 
-        self.data           = Io.read( file_name, dtype=dtype )
+        self.data           = io.read( file_name, dtype=dtype )
         self.dtype          = self.data.dtype
 
         ## History.
@@ -100,11 +100,11 @@ class Catter:
         is not overwritten.
         """
 
-        Io.write( file_name, self.data[self.indices] )
+        io.write( file_name, self.data[self.indices] )
 
         if clobber == False:
 
-            Io.write( 'cut_' + file_name, np.delete(self.data,self.indices) )
+            io.write( 'cut_' + file_name, np.delete(self.data,self.indices) )
 
     def display( self ):
         """

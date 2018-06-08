@@ -62,7 +62,7 @@ class Image_Manager:
             print("Currently this action only supports having a default .sex.")
 
         else:
-            sex_configs     = Io.get_configs( default )
+            sex_configs     = io.get_configs( default )
 
         ##  Handle output file names.
 
@@ -110,4 +110,4 @@ class Image_Manager:
 
         print( "Writing SExtractor configurations into %s..." % sex_file )
 
-        Io.write_configs( sex_file, sex_configs )
+        io.write_configs( sex_file, sex_configs )

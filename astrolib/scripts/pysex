@@ -11,7 +11,7 @@ print("Sorry, this script is currently not updated.")
 
 ##  Create the main argument parser.
 
-# cl_parser   = Io.CL_Parser()
+# cl_parser   = io.CL_Parser()
 #
 # cl_parser.add_argument(
 #     name            = "image",

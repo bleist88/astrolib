@@ -1,13 +1,6 @@
 """
-MCC/master.py
-
 This file contains the class object which is the master catalog.
 """
-
-from    __future__  import absolute_import
-from    __future__  import division
-from    __future__  import print_function
-from    __future__  import unicode_literals
 
 from   .__imports__ import *
 
@@ -148,10 +141,10 @@ class Master:
         """
 
         if cat_name.lower() == "master":
-            Io.write( file_name, self.master )
+            io.write( file_name, self.master )
 
         else:
-            Io.write( file_name, self.catalogs[cat_name] )
+            io.write( file_name, self.catalogs[cat_name] )
 
     def write_fits( self, file_name, clobber=False ):
         """
@@ -345,7 +338,7 @@ class Master:
 
         for i in range( master.size ):
 
-            Io.progress( i, master.size )
+            io.progress( i, master.size )
 
             other   = np.where( master["id"] != master[i]["id"] )[0]
 
@@ -382,11 +375,11 @@ class Master:
 
         if "id" not in catalog.dtype.names:
 
-            catalog  = Io.add_column( catalog, "id", "int64" )
+            catalog  = io.add_column( catalog, "id", "int64" )
 
         ##  Perform correlation with the master catalog.
 
-        M, S, Pa, Nb   = MCC.correlate(
+        M, S, Pa, Nb   = mcc.correlate(
             self.master[ "alpha" ], self.master[ "delta" ],
             catalog[ "alpha" ], catalog[ "delta" ],
             self.master[ "Rc" ], Rc_min=Rc

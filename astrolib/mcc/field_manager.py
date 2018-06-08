@@ -61,7 +61,7 @@ class Field_Manager:
         if saveas is None:
             saveas  = self.file_name
 
-        Io.save_obj( self, saveas, clobber=clobber )
+        io.save_obj( self, saveas, clobber=clobber )
 
     def open( self, file_name, force=False ):
         """
@@ -71,7 +71,7 @@ class Field_Manager:
             file_name       - file path to open
         """
 
-        Io.open_obj( self, file_name, force=force )
+        io.open_obj( self, file_name, force=force )
 
     ##  ========================================================================
     ##  Writing Catalogs
@@ -87,10 +87,10 @@ class Field_Manager:
         """
 
         if cat_name.lower() == "master":
-            Io.write( file_name, self.master )
+            io.write( file_name, self.master )
 
         else:
-            Io.write( file_name, self.catalogs[cat_name] )
+            io.write( file_name, self.catalogs[cat_name] )
 
     def write_fits( self, file_name, clobber=False ):
         """
@@ -270,7 +270,7 @@ class Field_Manager:
 
         for i in range( master.size ):
 
-            Io.progress( i, master.size )
+            io.progress( i, master.size )
 
             other   = np.where( master["id"] != master[i]["id"] )[0]
 
@@ -307,11 +307,11 @@ class Field_Manager:
 
         if "id" not in catalog.dtype.names:
 
-            catalog  = Io.add_column( catalog, "id", "int64" )
+            catalog  = io.add_column( catalog, "id", "int64" )
 
         ##  Perform correlation with the master catalog.
 
-        M, S, Pa, Nb   = MCC.correlate(
+        M, S, Pa, Nb   = mcc.correlate(
             self.master[ "alpha" ], self.master[ "delta" ],
             catalog[ "alpha" ], catalog[ "delta" ],
             self.master[ "Rc" ], Rc_min=Rc

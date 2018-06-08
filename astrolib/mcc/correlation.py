@@ -1,6 +1,4 @@
 """
-MCC/correlation.py
-
 The module contains correlation functions and routines.
 """
 
@@ -70,7 +68,7 @@ def correlate( Ax, Ay, Bx, By, Rc, Rc_min=None ):
 
     for i in range( Ax.size ):
 
-        Io.progress( i, Ax.size, alert="Correlating..." )
+        io.progress( i, Ax.size, alert="Correlating..." )
 
         Sj      = np.sqrt( (Bx - Ax[i])**2 + (By - Ay[i])**2 )
         M[i]    = np.where( Sj == np.min(Sj) )[0][0]
@@ -106,7 +104,7 @@ def clean_duplicates( M, S ):
 
     for i in range( M.size ):
 
-        Io.progress( i, M.size, alert='Cleaning...' )
+        io.progress( i, M.size, alert='Cleaning...' )
 
         if M[i] >= 0:
 
