@@ -28,6 +28,7 @@ cl_parser   = io.CL_Parser( sys.argv )
 if cl_parser.get_flag( "--help", default=False ):
 
     print( "mcc is not working properly.")
+    exit()
 
 ##  ============================================================================
 
