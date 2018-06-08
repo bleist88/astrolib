@@ -8,7 +8,7 @@ setup(
     long_description    = open("README.md").read(),
     author              = "Brian Leist",
     author_email        = "bleist@protonmail.com",
-    url                 = "https://github.com/bleist88/AstroLib",
+    url                 = "https://github.com/bleist88/astrolib",
     license             = open("LICENSE").read(),
     packages            = [
         "io", "mcc", "photometry"
