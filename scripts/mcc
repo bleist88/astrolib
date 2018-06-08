@@ -21,7 +21,7 @@ import  os, sys
 
 ##  Instantiate the cl_parser.
 
-cl_parser   = Io.CL_Parser( sys.argv )
+cl_parser   = io.CL_Parser( sys.argv )
 
 ##  ============================================================================
 

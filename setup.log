@@ -1,0 +1,246 @@
+running install
+running bdist_egg
+running egg_info
+creating astrolib.egg-info
+writing astrolib.egg-info/PKG-INFO
+writing dependency_links to astrolib.egg-info/dependency_links.txt
+writing top-level names to astrolib.egg-info/top_level.txt
+writing manifest file 'astrolib.egg-info/SOURCES.txt'
+reading manifest file 'astrolib.egg-info/SOURCES.txt'
+writing manifest file 'astrolib.egg-info/SOURCES.txt'
+installing library code to build/bdist.macosx-10.7-x86_64/egg
+running install_lib
+running build_py
+creating build
+creating build/lib
+creating build/lib/io
+copying io/file_parsing.py -> build/lib/io
+copying io/data_io.py -> build/lib/io
+copying io/catter.py -> build/lib/io
+copying io/figure.py -> build/lib/io
+copying io/__init__.py -> build/lib/io
+copying io/formatting.py -> build/lib/io
+copying io/display.py -> build/lib/io
+copying io/__imports__.py -> build/lib/io
+copying io/cl_parsing.py -> build/lib/io
+copying io/class_io.py -> build/lib/io
+creating build/lib/mcc
+copying mcc/create.py -> build/lib/mcc
+copying mcc/__init__.py -> build/lib/mcc
+copying mcc/master.py -> build/lib/mcc
+copying mcc/stamp.py -> build/lib/mcc
+copying mcc/__imports__.py -> build/lib/mcc
+copying mcc/correlation.py -> build/lib/mcc
+copying mcc/field_manager.py -> build/lib/mcc
+creating build/lib/photometry
+copying photometry/fits.py -> build/lib/photometry
+copying photometry/image_manager.py -> build/lib/photometry
+copying photometry/sex.py -> build/lib/photometry
+copying photometry/__init__.py -> build/lib/photometry
+copying photometry/stamp.py -> build/lib/photometry
+copying photometry/__imports__.py -> build/lib/photometry
+creating build/bdist.macosx-10.7-x86_64
+creating build/bdist.macosx-10.7-x86_64/egg
+creating build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/file_parsing.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/data_io.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/catter.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/figure.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/__init__.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/formatting.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/display.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/__imports__.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/cl_parsing.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/class_io.py -> build/bdist.macosx-10.7-x86_64/egg/io
+creating build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/create.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/__init__.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/master.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/stamp.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/__imports__.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/correlation.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/field_manager.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+creating build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/fits.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/image_manager.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/sex.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/__init__.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/stamp.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/__imports__.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/file_parsing.py to file_parsing.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/data_io.py to data_io.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/catter.py to catter.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/figure.py to figure.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/__init__.py to __init__.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/formatting.py to formatting.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/display.py to display.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/__imports__.py to __imports__.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/cl_parsing.py to cl_parsing.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/class_io.py to class_io.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/create.py to create.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/__init__.py to __init__.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/master.py to master.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/stamp.py to stamp.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/__imports__.py to __imports__.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/correlation.py to correlation.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/field_manager.py to field_manager.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/fits.py to fits.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/image_manager.py to image_manager.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/sex.py to sex.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/__init__.py to __init__.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/stamp.py to stamp.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/__imports__.py to __imports__.cpython-36.pyc
+creating build/bdist.macosx-10.7-x86_64/egg/EGG-INFO
+installing scripts to build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts
+running install_scripts
+running build_scripts
+creating build/scripts-3.6
+copying and adjusting scripts/mcc -> build/scripts-3.6
+copying and adjusting scripts/pysex -> build/scripts-3.6
+changing mode of build/scripts-3.6/mcc from 644 to 755
+changing mode of build/scripts-3.6/pysex from 644 to 755
+creating build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts
+copying build/scripts-3.6/mcc -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts
+copying build/scripts-3.6/pysex -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts
+changing mode of build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts/mcc to 755
+changing mode of build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts/pysex to 755
+copying astrolib.egg-info/PKG-INFO -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO
+copying astrolib.egg-info/SOURCES.txt -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO
+copying astrolib.egg-info/dependency_links.txt -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO
+copying astrolib.egg-info/top_level.txt -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO
+creating dist
+creating 'dist/astrolib-6.2831853-py3.6.egg' and adding 'build/bdist.macosx-10.7-x86_64/egg' to it
+removing 'build/bdist.macosx-10.7-x86_64/egg' (and everything under it)
+Processing astrolib-6.2831853-py3.6.egg
+Removing /anaconda3/lib/python3.6/site-packages/astrolib-6.2831853-py3.6.egg
+Copying astrolib-6.2831853-py3.6.egg to /anaconda3/lib/python3.6/site-packages
+astrolib 6.2831853 is already the active version in easy-install.pth
+Installing mcc script to /anaconda3/bin
+Installing pysex script to /anaconda3/bin
+
+Installed /anaconda3/lib/python3.6/site-packages/astrolib-6.2831853-py3.6.egg
+Processing dependencies for astrolib==6.2831853
+Finished processing dependencies for astrolib==6.2831853
+running install
+running bdist_egg
+running egg_info
+creating astrolib.egg-info
+writing astrolib.egg-info/PKG-INFO
+writing dependency_links to astrolib.egg-info/dependency_links.txt
+writing top-level names to astrolib.egg-info/top_level.txt
+writing manifest file 'astrolib.egg-info/SOURCES.txt'
+reading manifest file 'astrolib.egg-info/SOURCES.txt'
+writing manifest file 'astrolib.egg-info/SOURCES.txt'
+installing library code to build/bdist.macosx-10.7-x86_64/egg
+running install_lib
+running build_py
+creating build
+creating build/lib
+creating build/lib/io
+copying io/file_parsing.py -> build/lib/io
+copying io/data_io.py -> build/lib/io
+copying io/catter.py -> build/lib/io
+copying io/figure.py -> build/lib/io
+copying io/__init__.py -> build/lib/io
+copying io/formatting.py -> build/lib/io
+copying io/display.py -> build/lib/io
+copying io/__imports__.py -> build/lib/io
+copying io/cl_parsing.py -> build/lib/io
+copying io/class_io.py -> build/lib/io
+creating build/lib/mcc
+copying mcc/create.py -> build/lib/mcc
+copying mcc/__init__.py -> build/lib/mcc
+copying mcc/master.py -> build/lib/mcc
+copying mcc/stamp.py -> build/lib/mcc
+copying mcc/__imports__.py -> build/lib/mcc
+copying mcc/correlation.py -> build/lib/mcc
+copying mcc/field_manager.py -> build/lib/mcc
+creating build/lib/photometry
+copying photometry/fits.py -> build/lib/photometry
+copying photometry/image_manager.py -> build/lib/photometry
+copying photometry/sex.py -> build/lib/photometry
+copying photometry/__init__.py -> build/lib/photometry
+copying photometry/stamp.py -> build/lib/photometry
+copying photometry/__imports__.py -> build/lib/photometry
+creating build/bdist.macosx-10.7-x86_64
+creating build/bdist.macosx-10.7-x86_64/egg
+creating build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/file_parsing.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/data_io.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/catter.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/figure.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/__init__.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/formatting.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/display.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/__imports__.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/cl_parsing.py -> build/bdist.macosx-10.7-x86_64/egg/io
+copying build/lib/io/class_io.py -> build/bdist.macosx-10.7-x86_64/egg/io
+creating build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/create.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/__init__.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/master.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/stamp.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/__imports__.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/correlation.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+copying build/lib/mcc/field_manager.py -> build/bdist.macosx-10.7-x86_64/egg/mcc
+creating build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/fits.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/image_manager.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/sex.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/__init__.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/stamp.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+copying build/lib/photometry/__imports__.py -> build/bdist.macosx-10.7-x86_64/egg/photometry
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/file_parsing.py to file_parsing.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/data_io.py to data_io.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/catter.py to catter.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/figure.py to figure.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/__init__.py to __init__.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/formatting.py to formatting.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/display.py to display.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/__imports__.py to __imports__.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/cl_parsing.py to cl_parsing.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/io/class_io.py to class_io.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/create.py to create.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/__init__.py to __init__.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/master.py to master.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/stamp.py to stamp.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/__imports__.py to __imports__.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/correlation.py to correlation.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/mcc/field_manager.py to field_manager.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/fits.py to fits.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/image_manager.py to image_manager.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/sex.py to sex.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/__init__.py to __init__.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/stamp.py to stamp.cpython-36.pyc
+byte-compiling build/bdist.macosx-10.7-x86_64/egg/photometry/__imports__.py to __imports__.cpython-36.pyc
+creating build/bdist.macosx-10.7-x86_64/egg/EGG-INFO
+installing scripts to build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts
+running install_scripts
+running build_scripts
+creating build/scripts-3.6
+copying and adjusting scripts/mcc -> build/scripts-3.6
+copying and adjusting scripts/pysex -> build/scripts-3.6
+changing mode of build/scripts-3.6/mcc from 644 to 755
+changing mode of build/scripts-3.6/pysex from 644 to 755
+creating build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts
+copying build/scripts-3.6/mcc -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts
+copying build/scripts-3.6/pysex -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts
+changing mode of build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts/mcc to 755
+changing mode of build/bdist.macosx-10.7-x86_64/egg/EGG-INFO/scripts/pysex to 755
+copying astrolib.egg-info/PKG-INFO -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO
+copying astrolib.egg-info/SOURCES.txt -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO
+copying astrolib.egg-info/dependency_links.txt -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO
+copying astrolib.egg-info/top_level.txt -> build/bdist.macosx-10.7-x86_64/egg/EGG-INFO
+creating dist
+creating 'dist/astrolib-6.2831853-py3.6.egg' and adding 'build/bdist.macosx-10.7-x86_64/egg' to it
+removing 'build/bdist.macosx-10.7-x86_64/egg' (and everything under it)
+Processing astrolib-6.2831853-py3.6.egg
+Removing /anaconda3/lib/python3.6/site-packages/astrolib-6.2831853-py3.6.egg
+Copying astrolib-6.2831853-py3.6.egg to /anaconda3/lib/python3.6/site-packages
+astrolib 6.2831853 is already the active version in easy-install.pth
+Installing mcc script to /anaconda3/bin
+Installing pysex script to /anaconda3/bin
+
+Installed /anaconda3/lib/python3.6/site-packages/astrolib-6.2831853-py3.6.egg
+Processing dependencies for astrolib==6.2831853
+Finished processing dependencies for astrolib==6.2831853

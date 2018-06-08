@@ -10,4 +10,4 @@ build:
 	conda-build ${package} >> build.log
 
 install:
-	conda install astrolib.egg-info
+	conda install --use-local astrolib
