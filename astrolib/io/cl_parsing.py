@@ -49,10 +49,10 @@ class CL_Parser:
 
     def get_boolean( self, bool, default=False ):
 
-        if bool in self.booleans and default=False:
+        if bool in self.booleans and default == False:
             return  True
 
-        if bool in self.booleans and default=True:
+        if bool in self.booleans and default == True:
             return  False
 
         else:
