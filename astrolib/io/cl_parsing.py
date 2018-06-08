@@ -21,24 +21,42 @@ class CL_Parser:
     def __init__( self, cl_args ):
 
         self.cl_args    = [ arg for arg in cl_args if ".py" not in arg ]
+        self.booleans   = {}
         self.flags      = {}
         self.commands   = []
-        self.parse()
 
-    def parse( self ):
+        ##  Parse all arguments.
 
         for i, arg in enumerate( self.cl_args ):
 
-            ##  parse out all flag and key arguments
+            ##  Parse out any boolean arguments.
 
-            if "-" in arg:
+            if "--" in arg:
+                self.booleans[ arg ]    = True
 
-                self.flags[ arg ] = self.cl_args[ i + 1 ]
+            ##  Parse out any flag arguments.
 
-            if "-" not in arg:
-                if i > 0 and "-" not in self.cl_args[ i - 1 ]:
+            elif "-" in arg:
+                self.flags[ arg ]   = self.cl_args[i + 1]
 
-                    self.commands.append( arg )
+            ##  Parse out any command arguments.
+
+            else:
+                if i > 0:
+                    if "--" not in self.cl_args[i - 1]:
+                        if "-" not in self.cl_args[i - 1]:
+                            self.commands.append( arg )
+
+    def get_boolean( self, bool, default=False ):
+
+        if bool in self.booleans and default=False:
+            return  True
+
+        if bool in self.booleans and default=True:
+            return  False
+
+        else:
+            return  default
 
     def get_flag( self, flag, default=None ):
 
