@@ -1,13 +1,18 @@
 
 package		= astrolib
 
-all:	setup build install
+all:	setup conda-build conda-install
 
 setup:
-	python setup.py install >> setup.log
+	python setup.py install --single-version-externally-managed --record=record.txt
 
-build:
+conda-build:
 	conda-build ${package} >> build.log
 
-install:
+conda-install:
 	conda install --use-local astrolib
+
+fix:
+	mkdir /anaconda3/conda-bld/noarch/;
+	echo '{}' > /anaconda3/conda-bld/noarch/repodata.json;
+	bzip2 -k /anaconda3/conda-bld/noarch/repodata.json;

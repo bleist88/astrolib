@@ -10,10 +10,11 @@ setup(
     author_email        = "bleist@protonmail.com",
     url                 = "https://github.com/bleist88/astrolib",
     license             = open("LICENSE").read(),
+    zip_safe            = True,
     packages            = [
-        "io", "mcc", "photometry"
+        "astrolib/io", "astrolib/mcc", "astrolib/photometry"
     ],
     scripts             = [
-        "scripts/mcc", "scripts/pysex"
+        "astrolib/scripts/mcc", "astrolib/scripts/pysex"
     ],
 )
