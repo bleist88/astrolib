@@ -9,3 +9,5 @@ __all__     = [
 from . import io
 from . import mcc
 from . import photometry
+
+print("Let's get a picanic basket a boo boo.")
