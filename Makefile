@@ -17,10 +17,6 @@ conda-install:
 ##	Updating.
 
 update:
-	echo "Pushing to git...";
-	git add -A;
-	git commit -m "updating";
-	git push;
 	echo "Updating conda...";
 	conda update ${package};
 
