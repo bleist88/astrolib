@@ -189,7 +189,7 @@ class Stamp:
 
     def set_apertures( self, step=1 ):
 
-        ##  Create array of apertures with the radial space r.
+        ##  Create array of apertures for each radius in r.
         ##  The extra "1e-8" term is just a temporary bug fix.
 
         step        = to_pixels( step, self.scale, self.units )
@@ -254,7 +254,7 @@ class Stamp:
 
         for i in range( self.r.size ):
 
-            self.frac[i]    = np.sum( self.aperture[i] * self.psf )
+            self.frac[i]    = np.sum( self.apertures[i] * self.psf )
 
         self.frac  /= np.sum( self.psf )
         #self.frac  *= self.area / self.pix_area
@@ -275,6 +275,8 @@ class Stamp:
                 np.where( sky_data < mean0 + sigma * std )
             ]
 
+            ##  Use SExtractor's background calculation.
+
             self.sky        = 2.5*np.median(sky_data) - 1.5*np.mean(sky_data)
             self.sky_std    = std
 
@@ -291,8 +293,7 @@ class Stamp:
         ##  Calculate basic flux.
 
         for i in range( self.r.size ):
-
-            self.flux[i]    = np.sum( self.aperture[i] * self.data )
+            self.flux[i]    = np.sum( self.apertures[i] * self.data )
 
         self.flux      *= self.area / self.pix_area
 
@@ -300,11 +301,9 @@ class Stamp:
         ##  Correct for psf.
 
         if subtract is True:
-
             self.flux  -= self.sky * self.area
 
         if psf is True:
-
             self.flux  /= self.frac
 
         ##  Initialize smoothed profile.
@@ -317,7 +316,7 @@ class Stamp:
 
         for i in range( 1, self.r.size - 1 ):
 
-            weights = np.exp( -.5 * ((self.r - self.r[i]) / std)**2 )
+            weights         = np.exp( -.5 * ((self.r - self.r[i]) / std)**2 )
             self.profile[i] = np.average( self.flux, weights=weights )
 
         ##  Calculate the slope ( d(flux)/dr ) of the flux.
