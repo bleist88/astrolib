@@ -118,7 +118,7 @@ class Master:
 
             catalog     = self.catalogs[ cat ]
             extension   = fits.BinTableHDU.from_columns( catalog )
-            extension.update_ext_name( cat )
+            extension.header["EXTNAME"] = cat
             hdu_list.append( extension )
 
         hdu_list        = fits.HDUList( hdu_list )

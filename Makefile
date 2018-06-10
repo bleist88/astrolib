@@ -17,7 +17,7 @@ conda-install:
 ##	Updating.
 
 update:
-	conda update ${package};
+	conda update --use-local ${package};
 
 push:
 	git add -A;
