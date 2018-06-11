@@ -24,7 +24,7 @@ class Master:
 
     def __init__( self, file_name, init=False ):
 
-        ##  members
+        ##  Members
 
         self.file_name      = file_name
 
@@ -33,12 +33,13 @@ class Master:
 
         self.master         = np.zeros(0, dtype=master_dtype)
         self.N              = None
+
         self.list           = []
         self.images         = {}
         self.catalogs       = {}
         self.Rc             = {}
 
-        ##  initialization
+        ##  Initialization
 
         if init is False:
             self.open( file_name )
@@ -46,7 +47,22 @@ class Master:
         else:
             pickle.dump( self, gzip.open(self.file_name, "wb") )
 
-    ##  ========================================================================
+    def display( self ):
+        """
+        Display attributes into the terminal.
+        """
+        print(  "Master:  ",        self.file_name      )
+        print(  "Number:  ",        self.N              )
+        print(  "alpha0:  ",        self.alpha0         )
+        print(  "delta0:  ",        self.delta0         )
+        print(                                          )
+        print(  "extensions:  ",    len(self.list)      )
+        print(  "   0:    ",        "master"            )
+        for i, ext in enumerate( self.list ):
+            print(  "  ", i+1, ":  ",     ext           )
+        print(                                          )
+
+##  ========================================================================
     ##  File Management
 
     def save( self, saveas=None, clobber=False ):

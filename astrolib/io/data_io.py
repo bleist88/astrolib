@@ -121,6 +121,13 @@ def write(
         array.dtype, space=space, sci=sci, ipad=ipad, fpad=fpad, spad=spad
     )
 
+    ##  I'd like to write this rather than using io.get_dstring() above.  This
+    ##  is intended so that we can straighten up the gaps between columns.
+    ##
+    ##  1.  turn each column to string
+    ##  2.  find max length of each column
+    ##  3.  format including knowledge of max length
+
     ## Write header to file.
 
     if header is True:

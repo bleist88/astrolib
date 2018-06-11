@@ -20,7 +20,6 @@ class Image_Manager:
         self.bgr_image      = None
         self.wht_image      = None
         self.var_image      = None
-        self.unc_image      = None
         self.cov_image      = None
         self.flg_image      = None
         self.chk_image      = None
