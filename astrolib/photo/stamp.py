@@ -434,7 +434,7 @@ class Stamp:
 
             for r in R:
 
-                flux    = self.get_flux( r ) / np.max(self.flux)
+                flux    = self.get_flux( r )
                 r       = to_pixels( r, self.scale, self.unit )
                 axes.plot( [r, r], [0, flux], "y" )
 
@@ -445,10 +445,10 @@ class Stamp:
             Ri      = self.Ri * self.scale
             Ro      = self.Ro * self.scale
 
-            flux    = self.get_flux( Ri ) / np.max(self.flux)
+            flux    = self.get_flux( Ri )
             axes.plot( [self.Ri, self.Ri], [0, flux], "y--" )
 
-            flux    = self.get_flux( Ro ) / np.max(self.flux)
+            flux    = self.get_flux( Ro )
             axes.plot( [self.Ro, self.Ro], [0, flux], "y--" )
 
         ##  Set the scaling.
