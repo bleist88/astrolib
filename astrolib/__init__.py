@@ -8,4 +8,4 @@ __all__     = [
 
 from . import io
 from . import mcc
-from . import photometry
+from . import photo

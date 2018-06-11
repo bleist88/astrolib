@@ -1,6 +1,6 @@
 
 from    astrolib  import  io
-from    astrolib  import  photometry
+from    astrolib  import  photo
 
 import  os
 import  sys
