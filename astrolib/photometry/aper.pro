@@ -310,8 +310,9 @@ DONE:
 	  baderr = 9.999
       endelse
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Photometry begins.
+;;  ============================================================================
+;;  Photometry
+;;  ============================================================================
 
  for i = 0L, Nstars-1 do begin           ;Compute magnitudes for each star
    apmag = replicate(badval, Naper)   & magerr = replicate(baderr, Naper)
@@ -339,6 +340,9 @@ DONE:
    r = sqrt(rsq) - 0.5    ;2-d array of the radius of each pixel in the subarray
  endelse
 
+;;  Select the annulus and calculate background.
+;;  ============================================
+
 ;  Select pixels within sky annulus, and eliminate pixels falling
 ;       below BADLO threshold.  SKYBUF will be 1-d array of sky pixels
  if N_elements(SETSKYVAL) EQ 0 then begin
@@ -356,6 +360,8 @@ DONE:
  endif
   skybuf = rotbuf[ sindex[0:nsky-1] ]
 
+  ;;  this is where the background is calculated using clipping.
+  ;;  where is this "meanclip"?
   if keyword_set(meanback) then $
    meanclip,skybuf,skymod,skysig, $
          CLIPSIG=clipsig, MAXITER=maxiter, CONVERGE_NUM=converge_num  else $
@@ -385,7 +391,8 @@ DONE:
     skyskw = 0
 endelse
 
-
+;;  Select the aperture and calculate the background subtracted flux.
+;;  =================================================================
 
  for k = 0,Naper-1 do begin      ;Find pixels within each aperture
 
@@ -396,6 +403,8 @@ endelse
        if Ngood GT 0 then mask[good] = 1.0
        bad = where(  (x1 GT bigrad[k]) or (y1 GT bigrad[k] ))   ;Fix 05-Dec-05
        mask[bad] = -1
+
+       ;;  ??  What is happening here  ??
 
        gfract = where(mask EQ 0.0, Nfract)
        if Nfract GT 0 then mask[gfract] = $
@@ -408,7 +417,7 @@ endelse
        thisap = where( r LT apr[k] )   ;Select pixels within radius
        thisapd = rotbuf[thisap]
        thisapr = r[thisap]
-       fractn = (apr[k]-thisapr < 1.0 >0.0 ) ;Fraction of pixels to count
+       fractn = (apr[k]-thisapr < 1.0 > 0.0 ) ;Fraction of pixels to count
        full = fractn EQ 1.0
        gfull = where(full, Nfull)
        gfract = where(1 - full)
@@ -443,6 +452,7 @@ endfor ;k
 ; (2) the Poisson statistics of the observed star brightness.
 ; (3) the uncertainty of the mean sky brightness (this standard error
 ; increases directly with the area of the aperture).
+; (4) NOT INCLUDED - need to add the zeropoint error.
 
    error1[g] = area[g]*skyvar   ;Scatter in sky values
    error2[g] = (apmag[g] > 0)/phpadu  ;Random photon noise

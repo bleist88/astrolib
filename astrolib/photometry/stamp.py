@@ -29,13 +29,13 @@ def to_pixels( R, scale, units ):
 
 class Stamp:
 
-    def __init__( self, radius, scale, units="pixels" ):
+    def __init__( self, radius, scale, unit="pixels" ):
 
         ##  Data Array Parameters
 
         self.shape      = None      ##  shape of array [pixels]
         self.scale      = None      ##  [units] / pixel
-        self.units      = None      ##  angle units
+        self.unit       = None      ##  angle units
 
         self.data       = None      ##  data array
         self.grid       = None      ##  meshgrid (X, Y)
@@ -69,7 +69,6 @@ class Stamp:
         self.annulus    = None      ##  array of annulus arrays of values {0,1}
 
         self.flux       = None      ##  array of pure flux values at radius r
-        self.profile    = None      ##  array of gaussian smoothed flux
         self.slope      = None      ##  derivative of flux:  d(flux)/dr
         self.curvature  = None      ##  second derivative of flux:  d2(flux)/dr2
         self.sky        = None      ##  derived sky background value
@@ -81,7 +80,7 @@ class Stamp:
         ##  Initialize data members.
 
         radius          = to_pixels( radius, scale, units )
-        self.units      = units
+        self.unit      = units
 
         self.shape      = int(2 * radius + 1), int(2 * radius + 1)
         self.scale      = scale
@@ -187,13 +186,13 @@ class Stamp:
     ##  ====================================================================  ##
     ##  Aperture Manipulation
 
-    def set_apertures( self, step=1 ):
+    def set_apertures( self, dr=1, unit="pixels" ):
 
         ##  Create array of apertures for each radius in r.
         ##  The extra "1e-8" term is just a temporary bug fix.
 
-        step        = to_pixels( step, self.scale, self.units )
-        self.r      = np.arange( 0, self.pix_x, step )
+        dr          = to_pixels( dr, self.scale, unit )
+        self.r      = np.arange( 0, self.pix_x, dr )
         self.area   = np.pi * self.r**2
 
         self.aperture   = []
@@ -216,10 +215,10 @@ class Stamp:
         self.aperture   = np.array( self.aperture )
         self.pix_area   = np.array( self.pix_area )
 
-    def set_annulus( self, Ri, Ro ):
+    def set_annulus( self, Ri, Ro, unit="pixels" ):
 
-        self.Ri         = to_pixels( Ri, self.scale, self.units )
-        self.Ro         = to_pixels( Ro, self.scale, self.units )
+        self.Ri         = to_pixels( Ri, self.scale, unit )
+        self.Ro         = to_pixels( Ro, self.scale, unit )
 
         self.annulus    = np.zeros( self.shape, dtype="int32" ) + 1
 
@@ -248,7 +247,7 @@ class Stamp:
 
     def calc_psf( self, std ):
 
-        std         = to_pixels( std, self.scale, self.units )
+        std         = to_pixels( std, self.scale, self.unit )
         self.psf    = np.exp( -.5 * (self.radial / std)**2 )
         self.frac   = 0 * self.r
 
@@ -263,7 +262,8 @@ class Stamp:
 
         ##  Iteratively remove outliers and calculate statistics.
 
-        sky_data    = self.data[ np.where( self.annulus > 0 ) ]
+        sky_data    = self.data * self.annulus
+        #sky_data    = self.data[ np.where( self.annulus > 0 ) ]
 
         while True:
 
@@ -286,7 +286,6 @@ class Stamp:
     def calc_flux( self, subtract=False, psf=False ):
 
         self.flux       = 0 * self.r
-        self.profile    = 0 * self.r
         self.slope      = 0 * self.r
         self.curvature  = 0 * self.r
 
@@ -308,20 +307,23 @@ class Stamp:
 
         ##  Initialize smoothed profile.
 
-        self.profile[:] = self.flux[:]
+        self.flux[:] = self.flux[:]
 
-    def calc_profile( self, std ):
+    def smooth_flux( self, std ):
 
-        std             = to_pixels( std, self.scale, self.units )
+        std     = to_pixels( std, self.scale, self.unit )
+        flux    = np.zeros( self.flux.size )
 
         for i in range( 1, self.r.size - 1 ):
 
-            weights         = np.exp( -.5 * ((self.r - self.r[i]) / std)**2 )
-            self.profile[i] = np.average( self.flux, weights=weights )
+            weights = np.exp( -.5 * ((self.r - self.r[i]) / std)**2 )
+            flux[i] = np.average( self.flux, weights=weights )
+
+        self.flux   = flux
 
         ##  Calculate the slope ( d(flux)/dr ) of the flux.
 
-        self.slope[1:-1]    = (self.profile[1:-1] - self.profile[:-2])
+        self.slope[1:-1]    = (self.flux[1:-1] - self.flux[:-2])
         self.slope[1:-1]   /= (self.r[1:-1] - self.r[0:-2])
 
         #self.slope[0]       = self.slope[1]
@@ -339,18 +341,17 @@ class Stamp:
 
         self.sky            = min_slope * self.r
         self.flux          -= self.sky
-        self.profile       -= self.sky
 
     def get_flux( self, R ):
 
-        R   = to_pixels( R, self.scale, self.units )
+        R   = to_pixels( R, self.scale, self.unit )
 
         ##  Estimate the flux at the specifed radius by linear interpolation.
 
         i       = self.find_R( R )
         dR      = R - self.r[i]
 
-        return  self.profile[i] + (dR * self.slope[i+1])
+        return  self.flux[i] + (dR * self.slope[i+1])
 
     def get_psf_flux( self, subtract=False ):
 
@@ -363,12 +364,12 @@ class Stamp:
     ##  Plotting
 
     def plot_stamp( self,
-        axes, R=None, annulus=True,
-        sigma=3, epsilon=0.03, cmap="gray", color="y"
+        axes, R=None, annulus=True, sigma=3, epsilon=0.03,
+        cmap="gray", color="y", unit="pixels"
     ):
 
         axes.imshow(
-            Photopy.rescale( self.data, sigma=sigma, epsilon=epsilon ),
+            photometry.rescale( self.data, sigma=sigma, epsilon=epsilon ),
             cmap=cmap
         )
 
@@ -381,7 +382,7 @@ class Stamp:
 
             for r in R:
 
-                r   = to_pixels( r, self.scale, self.units )
+                r   = to_pixels( r, self.scale, unit )
 
                 axes.add_artist(
                     pyplot.Circle(
@@ -408,9 +409,7 @@ class Stamp:
                 )
             )
 
-    def plot_profile( self,
-        axes, R=None, annulus=True, yscale="log"
-    ):
+    def plot_profile( self, axes, R=None, annulus=True, yscale="log", unit="pixel" ):
 
         axes.set_ylim( 0, 1.1 )
 
@@ -438,7 +437,7 @@ class Stamp:
             for r in R:
 
                 flux    = self.get_flux( r ) / np.max(self.flux)
-                r       = to_pixels( r, self.scale, self.units )
+                r       = to_pixels( r, self.scale, self.unit )
                 axes.plot( [r, r], [0, flux], "y" )
 
         ##  Plot the annulus.
@@ -462,7 +461,7 @@ class Stamp:
             pass
 
     def create_figure( self,
-        R=None, sigma=3, epsilon=0.03, yscale="log", saveas=False
+        R=None, sigma=3, epsilon=0.03, yscale="log", saveas=False, unit="pixels"
     ):
 
         Fig     = pyplot.figure( figsize=(14,6) )
