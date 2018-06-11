@@ -409,20 +409,18 @@ class Stamp:
                 )
             )
 
-    def plot_profile( self, axes, R=None, annulus=True, yscale="log", unit="pixel" ):
+    def plot_flux( self, axes, R=None, annulus=True, yscale="log", unit="pixel" ):
 
         axes.set_ylim( 0, 1.1 )
 
         flux        = self.flux / np.max(self.flux)
-        profile     = self.profile / np.max(self.flux)
         slope       = self.slope / np.max(self.slope)
         curvature   = self.curvature / np.max(self.slope)
         area        = self.area / self.pix_area
 
         ##  Plot the basic flux profile.
 
-        axes.plot( self.r, profile,     "b" )
-        axes.plot( self.r, flux,        "ko", ms=2 )
+        axes.plot( self.r, flux,        "k", ms=2 )
         axes.plot( self.r, slope,       "c-" )
         axes.plot( self.r, curvature,   "c--" )
         axes.plot( self.r, area,        "r--" )
@@ -475,7 +473,7 @@ class Stamp:
         Ax2.set_ylabel("Flux [normalized]")
 
         self.plot_stamp( Ax1, R=R, sigma=sigma, epsilon=epsilon )
-        self.plot_profile( Ax2, R=R, yscale=yscale )
+        self.plot_flux( Ax2, R=R, yscale=yscale )
 
         if saveas is False:
             pyplot.show()
