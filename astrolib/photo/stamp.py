@@ -369,7 +369,7 @@ class Stamp:
     ):
 
         axes.imshow(
-            photometry.rescale( self.data, sigma=sigma, epsilon=epsilon ),
+            photo.rescale( self.data, sigma=sigma, epsilon=epsilon ),
             cmap=cmap
         )
 
