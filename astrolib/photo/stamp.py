@@ -16,12 +16,12 @@ pix_units   = [
     "pixel", "pixels", "pix", "pixs", "p"
 ]
 
-def to_pixels( R, scale, units ):
+def to_pixels( R, scale, unit ):
 
-    if units in arc_units or units in deg_units:
+    if unit in arc_units or unit in deg_units:
         R   = R / scale
-    elif units not in pix_units:
-        print("The units ", units, " is not recognized.")
+    elif unit not in pix_units:
+        print("The unit ", unit, " is not recognized.")
 
     return  R
 
@@ -34,8 +34,8 @@ class Stamp:
         ##  Data Array Parameters
 
         self.shape      = None      ##  shape of array [pixels]
-        self.scale      = None      ##  [units] / pixel
-        self.unit       = None      ##  angle units
+        self.scale      = None      ##  [unit] / pixel
+        self.unit       = None      ##  angle unit
 
         self.data       = None      ##  data array
         self.grid       = None      ##  meshgrid (X, Y)
@@ -48,11 +48,11 @@ class Stamp:
 
         self.pix_x      = None      ##  center pixel coordinates [pixels]
         self.pix_y      = None
-        self.pix_alpha  = None      ##  center pixel coordinates [units]
+        self.pix_alpha  = None      ##  center pixel coordinates [unit]
         self.pix_delta  = None
         self.x          = None      ##  target coordinates [pixels]
         self.y          = None
-        self.alpha      = None      ##  target coordinates [units]
+        self.alpha      = None      ##  target coordinates [unit]
         self.delta      = None
         self.dx         = None      ##  offset ( x - pix_x )
         self.dy         = None      ##  offset ( y - pix_y )
@@ -79,8 +79,8 @@ class Stamp:
 
         ##  Initialize data members.
 
-        radius          = to_pixels( radius, scale, units )
-        self.unit      = units
+        radius          = to_pixels( radius, scale, unit )
+        self.unit       = unit
 
         self.shape      = int(2 * radius + 1), int(2 * radius + 1)
         self.scale      = scale
