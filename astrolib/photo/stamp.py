@@ -292,7 +292,7 @@ class Stamp:
         ##  Calculate basic flux.
 
         for i in range( self.r.size ):
-            self.flux[i]    = np.sum( self.apertures[i] * self.data )
+            self.flux[i]    = np.sum( self.aperture[i] * self.data )
 
         self.flux      *= self.area / self.pix_area
 
