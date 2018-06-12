@@ -25,19 +25,6 @@ def to_pixels( R, scale, unit ):
 
     return  R
 
-def err_nan( name, thing ):
-
-    if np.isnan( thing ):
-        print( name + " is nan!" )
-
-    try:
-        for t in thing:
-            if np.isnan( t ):
-                print( name + " has nan!" )
-    except:
-        continue
-
-
 ################################################################################
 
 class Stamp:
@@ -292,7 +279,7 @@ class Stamp:
 
             self.sky        = 2.5*np.median(sky_data) - 1.5*np.mean(sky_data)
             self.sky_std    = std
-            err_nan( "sky", self.sky )
+
             if np.abs( mean0 - self.sky ) / mean0 < epsilon or iters <= 0:
                 break
 
@@ -308,7 +295,7 @@ class Stamp:
             self.flux[i]    = np.sum( self.aperture[i] * self.data )
 
         self.flux      *= self.area / self.pix_area
-        err_nan( "flux", self.flux )
+        
         ##  Subtract the sky from the flux profile.
         ##  Correct for psf.
 
