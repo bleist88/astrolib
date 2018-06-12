@@ -381,7 +381,7 @@ class Stamp:
                 R   = [ R ]
 
             for r in R:
-
+                print(unit)
                 r   = to_pixels( r, self.scale, unit )
 
                 axes.add_artist(
@@ -415,15 +415,15 @@ class Stamp:
 
         flux        = self.flux / np.max(self.flux)
         slope       = self.slope / np.max(self.slope)
-        curvature   = self.curvature / np.max(self.slope)
+        curvature   = self.curvature / np.max(self.curvature)
         area        = self.area / self.pix_area
 
         ##  Plot the basic flux profile.
 
-        axes.plot( self.r, flux,        "k", ms=2 )
-        axes.plot( self.r, slope,       "c-" )
-        axes.plot( self.r, curvature,   "c--" )
-        axes.plot( self.r, area,        "r--" )
+        axes.plot( self.r,  flux,        "k"    )
+        axes.plot( self.r,  slope,       "c-"   )
+        axes.plot( self.r,  curvature,   "c--"  )
+        axes.plot( self.r,  area,        "r--"  )
 
         ##  Plot aperture lines.
 
@@ -434,7 +434,7 @@ class Stamp:
 
             for r in R:
 
-                flux    = self.get_flux( r )
+                flux    = self.get_flux( r ) / np.max( self.flux )
                 r       = to_pixels( r, self.scale, self.unit )
                 axes.plot( [r, r], [0, flux], "y" )
 
@@ -445,10 +445,10 @@ class Stamp:
             Ri      = self.Ri * self.scale
             Ro      = self.Ro * self.scale
 
-            flux    = self.get_flux( Ri )
+            flux    = self.get_flux( Ri ) / np.max( self.flux )
             axes.plot( [self.Ri, self.Ri], [0, flux], "y--" )
 
-            flux    = self.get_flux( Ro )
+            flux    = self.get_flux( Ro ) / np.max( self.flux )
             axes.plot( [self.Ro, self.Ro], [0, flux], "y--" )
 
         ##  Set the scaling.
