@@ -381,7 +381,7 @@ class Stamp:
                 R   = [ R ]
 
             for r in R:
-                print(unit)
+                
                 r   = to_pixels( r, self.scale, unit )
 
                 axes.add_artist(
@@ -472,7 +472,7 @@ class Stamp:
         Ax2.set_xlabel("Aperture [pixel]")
         Ax2.set_ylabel("Flux [normalized]")
 
-        self.plot_stamp( Ax1, R=R, sigma=sigma, epsilon=epsilon )
+        self.plot_stamp( Ax1, R=R, sigma=sigma, epsilon=epsilon, unit=unit )
         self.plot_flux( Ax2, R=R, yscale=yscale )
 
         if saveas is False:
