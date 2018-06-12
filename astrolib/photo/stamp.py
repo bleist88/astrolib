@@ -381,7 +381,7 @@ class Stamp:
                 R   = [ R ]
 
             for r in R:
-                
+
                 r   = to_pixels( r, self.scale, unit )
 
                 axes.add_artist(
