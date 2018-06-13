@@ -407,7 +407,7 @@ class Stamp:
                 )
             )
 
-    def plot_flux( self, axes, R=None, annulus=True, yscale="log", unit="pixel" ):
+    def plot_flux( self, axes, R=None, annulus=True, yscale="log" ):
 
         axes.set_ylim( 0, 1.1 )
 
@@ -428,7 +428,7 @@ class Stamp:
         if R is not None:
 
             if isinstance( R, (int,float) ):
-                R   = [ R ]
+                R   = [ to_pixels(R, self.scale, self.unit) ]
 
             for r in R:
 
