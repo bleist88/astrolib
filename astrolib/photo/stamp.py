@@ -339,9 +339,9 @@ class Stamp:
         self.curvature[-1]      = self.curvature[-2]
 
         ##  Subtract the sky.
-
-        self.sky            = np.min( self.slope[1:-1] ) * np.pi * self.r**2
-        self.flux          -= self.sky
+        #
+        #sky         = np.min( self.slope[1:-1] ) * np.pi * self.r**2
+        #self.flux  -= sky
 
     def get_flux( self, R ):
 
