@@ -109,9 +109,8 @@ class Stamp:
     def set_data( self, image, header, alpha=None, delta=None, x=None, y=None ):
 
         ## Get image data and wcs info.
-        ## Determine stamp dimensions based on given information.
 
-        self.WCS        = WCS( header )
+        self.WCS    = WCS( header )
 
         ##  Retrieve alternate coordinates (alpha, delta) <--> (x, y).
 
@@ -124,8 +123,8 @@ class Stamp:
             im_y0       = int( im_y )
             self.alpha  = alpha
             self.delta  = delta
-            self.dx     = im_x - ( im_x0 + .5 )
-            self.dy     = im_y - ( im_y0 + .5 )
+            self.dx     = im_x - ( im_x0 + 0.5 )
+            self.dy     = im_y - ( im_y0 + 0.5 )
 
         elif x is not None and y is not None:
 
@@ -136,8 +135,8 @@ class Stamp:
             im_y0       = int( im_y )
             self.alpha  = self.WCS.wcs_pix2world( position, 1 )[0][0]
             self.delta  = self.WCS.wcs_pix2world( position, 1 )[0][1]
-            self.dx     = im_x - ( im_x0 + .5 )
-            self.dy     = im_y - ( im_y0 + .5 )
+            self.dx     = im_x - ( im_x0 + 0.5 )
+            self.dy     = im_y - ( im_y0 + 0.5 )
 
         else:
 
@@ -171,9 +170,8 @@ class Stamp:
         ##  Set using the grid method.
         ##  Use "try:" in order to troubleshoot stamp exceeding the image.
 
-        im_grid         = np.copy( self.grid )
-        im_grid[0]     += im_x0 - self.pix_x
-        im_grid[1]     += im_y0 - self.pix_y
+        im_grid[0]      = self.grid[0] + im_x0 - self.pix_x
+        im_grid[1]      = self.grid[1] + im_y0 - self.pix_y
 
         try:
             self.data[self.grid]    = image[ im_grid[0], im_grid[1] ]
@@ -191,6 +189,7 @@ class Stamp:
         ##  Create array of apertures for each radius in r.
         ##  The extra "1e-8" term is just a temporary bug fix.
 
+        dr          = to_pixels( dr, self.scale, self.unit )
         self.r      = np.arange( 0, self.pix_x, dr )
         self.area   = np.pi * self.r**2
 
@@ -216,8 +215,8 @@ class Stamp:
 
     def set_annulus( self, Ri, Ro ):
 
-        self.Ri     = Ri
-        self.Ro     = Ro
+        self.Ri     = to_pixels( Ri, self.scale, self.unit )
+        self.Ro     = to_pixels( Ro, self.scale, self.unit )
 
         self.annulus    = np.zeros( self.shape, dtype="int32" ) + 1
 
@@ -246,6 +245,7 @@ class Stamp:
 
     def calc_psf( self, std ):
 
+        std         = to_pixels( std, self.scale, self.unit )
         self.psf    = np.exp( -.5 * (self.radial / std)**2 )
         self.frac   = 0 * self.r
 
@@ -260,8 +260,7 @@ class Stamp:
 
         ##  Iteratively remove outliers and calculate statistics.
 
-        sky_data    = self.data * self.annulus
-        #sky_data    = self.data[ np.where( self.annulus > 0 ) ]
+        sky_data    = self.data[ np.where( self.annulus > 0 ) ]
 
         while True:
 
@@ -316,6 +315,8 @@ class Stamp:
         self.curvature[-1]      = self.curvature[-2]
 
     def smooth_flux( self, std ):
+
+        std     = to_pixels( std, self.scale, self.unit )
 
         flux    = np.zeros( self.flux.size )
 
