@@ -447,8 +447,8 @@ class Stamp:
 
         if annulus is True:
 
-            Ri      = self.Ri * self.scale
-            Ro      = self.Ro * self.scale
+            Ri      = to_pixels( self.Ri, self.scale, self.unit )
+            Ro      = to_pixels( self.Ri, self.scale, self.unit )
 
             flux    = self.get_flux( Ri ) / np.max( self.flux )
             axes.plot( [self.Ri, self.Ri], [0, flux], "y--" )
