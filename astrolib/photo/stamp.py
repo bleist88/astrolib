@@ -340,7 +340,7 @@ class Stamp:
 
         ##  Subtract the sky.
 
-        self.sky            = min_slope * self.r
+        self.sky            = np.min( self.slope[1:-1] ) * np.pi * self.r**2
         self.flux          -= self.sky
 
     def get_flux( self, R ):
