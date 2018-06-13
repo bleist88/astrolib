@@ -216,6 +216,9 @@ class Stamp:
 
     def set_annulus( self, Ri, Ro ):
 
+        self.Ri     = Ri
+        self.Ro     = Ro
+
         self.annulus    = np.zeros( self.shape, dtype="int32" ) + 1
 
         self.annulus[
