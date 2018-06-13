@@ -170,11 +170,11 @@ class Stamp:
         ##  Set using the grid method.
         ##  Use "try:" in order to troubleshoot stamp exceeding the image.
 
-        im_grid[0]      = self.grid[0] + im_x0 - self.pix_x
-        im_grid[1]      = self.grid[1] + im_y0 - self.pix_y
-
         try:
-            self.data[self.grid]    = image[ im_grid[0], im_grid[1] ]
+            self.data[self.grid]    = image[
+                self.grid[0] + im_x0 - self.pix_x,
+                self.grid[1] + im_y0 - self.pix_y
+            ]
             self.data               = np.rot90( self.data, k=k )
             self.data              -= np.min( self.data )
 
