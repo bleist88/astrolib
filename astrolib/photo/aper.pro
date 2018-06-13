@@ -158,29 +158,38 @@ pro aper,image,xc,yc,mags,errap,sky,skyerr,phpadu,apr,skyradii,badpix, $
 ;       Avoid integer overflow for very big images W. Landsman/R. Gutermuth   Mar 2016
 ;       Eliminate limit on maximum number of sky pixels W. Landsman  Dec 2016
 ;-
+
  COMPILE_OPT IDL2
  On_error,2
-;             Set parameter limits
- ;Smallest number of pixels from which the sky may be determined
- if N_elements(minsky) EQ 0 then minsky = 20
-;
+
+;;  ============================================================================
+;;  Argument parsing and parameter handling
+
+;;  Set parameter limits
+;;  Smallest number of pixels from which the sky may be determined
+
+if N_elements(minsky) EQ 0 then minsky = 20
+
 if N_params() LT 3 then begin    ;Enough parameters supplied?
-  print, $
-  'Syntax - APER, image, xc, yc, [ mags, errap, sky, skyerr, phpadu, apr, '
-  print,'             skyrad, badpix, /EXACT, /FLUX, SETSKYVAL = ,PRINT=, ]'
-  print,'             /SILENT, /NAN, MINSKY='
-  return
+    print, $
+    'Syntax - APER, image, xc, yc, [ mags, errap, sky, skyerr, phpadu, apr, '
+    print,'             skyrad, badpix, /EXACT, /FLUX, SETSKYVAL = ,PRINT=, ]'
+    print,'             /SILENT, /NAN, MINSKY='
+    return
 endif
 
- s = size(image)
- if ( s[0] NE 2 ) then message, $
-       'ERROR - Image array (first parameter) must be 2 dimensional'
- ncol = s[1] & nrow = s[2]           ;Number of columns and rows in image array
+s = size(image)
 
-  silent = keyword_set(SILENT)
+if ( s[0] NE 2 ) then message, $
+    'ERROR - Image array (first parameter) must be 2 dimensional'
 
- if ~keyword_set(nan) then begin
- if (N_elements(badpix) NE 2) then begin ;Bad pixel values supplied
+ncol = s[1] & nrow = s[2]   ;;  number of columns and rows in image array
+
+silent = keyword_set(SILENT)
+
+if ~keyword_set(nan) then begin
+if (N_elements(badpix) NE 2) then begin     ;;  bad pixel values supplied
+
 GET_BADPIX:
    ans = ''
    print,'Enter low and high bad pixel values, [RETURN] for defaults'
@@ -202,62 +211,60 @@ GET_BADPIX:
    read, 'Enter first aperture radius: ',ap
    apr[0] = ap
    ap = 'aper'
-   for i = 1,9 do begin
+   for i = 1,9 do begin ;;  ?????
 GETAP:
       read,'Enter another aperture radius, [RETURN to terminate]: ',ap
-      if ap EQ '' then goto,DONE
+      if ap EQ '' then goto, DONE
       result = strnumber(ap,val)
       if result EQ 1 then apr[i] = val else goto, GETAP
    endfor
 DONE:
    apr = apr[0:i-1]
- endif
+endif
 
 
- if N_elements(SETSKYVAL) GT 0 then begin
-     if N_elements( SETSKYVAL ) EQ 1 then setskyval = [setskyval,0.,1.]
-     if N_elements( SETSKYVAL ) NE 3 then message, $
+if N_elements(SETSKYVAL) GT 0 then begin
+    if N_elements( SETSKYVAL ) EQ 1 then setskyval = [setskyval,0.,1.]
+    if N_elements( SETSKYVAL ) NE 3 then message, $
         'ERROR - Keyword SETSKYVAL must contain 1 or 3 elements'
-     skyrad = [ 0., max(apr) + 1]
- endif else begin
-   if N_elements(skyradii) NE 2 then begin
-     skyrad = fltarr(2)
-     read,'Enter inner and outer sky radius (pixel units): ',skyrad
-  endif else skyrad = float(skyradii)
-  endelse
+    skyrad = [ 0., max(apr) + 1]
+endif else begin
+    if N_elements(skyradii) NE 2 then begin
+        skyrad = fltarr(2)
+        read,'Enter inner and outer sky radius (pixel units): ', skyrad
+endif else skyrad = float(skyradii)
+endelse
 
- if ( N_elements(phpadu) LT 1 ) then $
-   read,'Enter scale factor in Photons per Analog per Digital Unit: ',phpadu
+if ( N_elements(phpadu) LT 1 ) then $
+    read, 'Enter scale factor in Photons per Analog per Digital Unit: ', phpadu
 
- Naper = N_elements( apr )                        ;Number of apertures
- Nstars = min([ N_elements(xc), N_elements(yc) ])  ;Number of stars to measure
+Naper   = N_elements( apr )                         ;;  number of apertures
+Nstars  = min([ N_elements(xc), N_elements(yc) ])   ;;  number of stars to measure
 
- ms = strarr( Naper )       ;String array to display mag for each aperture
- if keyword_set(flux) then $
-          fmt = '(F8.1,1x,A,F7.1)' else $           ;Flux format
-          fmt = '(F9.3,A,F5.3)'                  ;Magnitude format
- fmt2 = '(I5,2F8.2,F7.2,1x,3A,3(/,28x,4A,:))'       ;Screen format
- fmt3 = '(I4,5F8.2,1x,6A,2(/,44x,9A,:))'            ;Print format
+ms = strarr( Naper )        ;;  string array to display mag for each aperture
+if keyword_set(flux) then $
+    fmt     = '(F8.1,1x,A,F7.1)' else $                 ;;  flux format
+    fmt     = '(F9.3,A,F5.3)'                           ;;  magnitude format
+    fmt2    = '(I5,2F8.2,F7.2,1x,3A,3(/,28x,4A,:))'     ;;  screen format
+    fmt3    = '(I4,5F8.2,1x,6A,2(/,44x,9A,:))'          ;;  print format
 
- mags = fltarr( Naper, Nstars) & errap = mags           ;Declare arrays
- sky = fltarr( Nstars )        & skyerr = sky
- area = !PI*apr*apr                 ;Area of each aperture
+mags    = fltarr( Naper, Nstars) & errap = mags         ;;  declare arrays
+sky     = fltarr( Nstars )        & skyerr = sky
+area    = !PI*apr*apr                                   ;;  area of each aperture
 
- if keyword_set(EXACT) then begin
-      bigrad = apr + 0.5
-      smallrad = apr/sqrt(2) - 0.5
- endif
+if keyword_set(EXACT) then begin
+    bigrad      = apr + 0.5
+    smallrad    = apr/sqrt(2) - 0.5
+endif
 
+if N_elements(SETSKYVAL) EQ 0 then begin
+    rinsq   = (skyrad[0]> 0.)^2
+    routsq  = skyrad[1]^2
+endif
 
- if N_elements(SETSKYVAL) EQ 0 then begin
-
-     rinsq =  (skyrad[0]> 0.)^2
-     routsq = skyrad[1]^2
- endif
-
- if keyword_set(PRINT) then begin      ;Open output file and write header info?
+if keyword_set(PRINT) then begin      ;;    open output file and write header info?
    if size(PRINT,/TNAME) NE 'STRING'  then file = 'aper.prt' $
-                                   else file = print
+                                      else file = print
    message,'Results will be written to a file ' + file,/INF
    openw,lun,file,/GET_LUN
    printf,lun,'Program: APER: '+ systime(), '   User: ', $
@@ -276,31 +283,31 @@ DONE:
  endif
  print = keyword_set(PRINT)
 
-;         Print header
- if ~SILENT then begin
+if ~SILENT then begin                  ;;  print header
     if KEYWORD_SET(FLUX) then begin
        print, format="(/1X,'Star',5X,'X',7X,'Y',6X,'Sky',8X,'Fluxes')"
     endif else print, $
        format="(/1X,'Star',5X,'X',7X,'Y',6X,'Sky',8X,'Magnitudes')"
- endif
+endif
 
-;  Compute the limits of the submatrix.   Do all stars in vector notation.
+;;  Compute the limits of the submatrix.
+;;  Do all stars in vector notation.
 
- lx = long(xc-skyrad[1]) > 0           ;Lower limit X direction
- ux = long(xc+skyrad[1]) < (ncol-1)    ;Upper limit X direction
- nx = ux-lx+1                         ;Number of pixels X direction
- ly = long(yc-skyrad[1]) > 0           ;Lower limit Y direction
- uy = long(yc+skyrad[1]) < (nrow-1);   ;Upper limit Y direction
- ny = uy-ly +1                        ;Number of pixels Y direction
- dx = xc-lx                         ;X coordinate of star's centroid in subarray
- dy = yc-ly                         ;Y coordinate of star's centroid in subarray
+lx  = long(xc-skyrad[1]) > 0        ;;  lower limit X direction
+ux  = long(xc+skyrad[1]) < (ncol-1) ;;  upper limit X direction
+nx  = ux-lx+1                       ;;  number of pixels X direction
+ly  = long(yc-skyrad[1]) > 0        ;;  lower limit Y direction
+uy  = long(yc+skyrad[1]) < (nrow-1) ;;  upper limit Y direction
+ny  = uy-ly +1                      ;;  number of pixels Y direction
+dx  = xc-lx                         ;;  x coordinate of star's centroid in subarray
+dy  = yc-ly                         ;;  y coordinate of star's centroid in subarray
 
- edge = (dx-0.5) < (nx+0.5-dx) < (dy-0.5) < (ny+0.5-dy) ;Closest edge to array
- badstar = ((xc LT 0.5) or (xc GT ncol-1.5) $  ;Stars too close to the edge
+edge    = (dx-0.5) < (nx+0.5-dx) < (dy-0.5) < (ny+0.5-dy) ;Closest edge to array
+badstar = ((xc LT 0.5) or (xc GT ncol-1.5) $  ;Stars too close to the edge
         or (yc LT 0.5) or (yc GT nrow-1.5))
-;
- badindex = where( badstar, Nbad)              ;Any stars outside image
- if ( Nbad GT 0 ) then message, /INF, $
+
+badindex = where( badstar, Nbad)              ;Any stars outside image
+if ( Nbad GT 0 ) then message, /INF, $
       'WARNING - ' + strn(nbad) + ' star positions outside image'
       if keyword_set(flux) then begin
           badval = !VALUES.F_NAN

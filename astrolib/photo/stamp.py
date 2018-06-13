@@ -186,12 +186,11 @@ class Stamp:
     ##  ====================================================================  ##
     ##  Aperture Manipulation
 
-    def set_apertures( self, dr=1, unit="pixels" ):
+    def set_apertures( self, dr=1 ):
 
         ##  Create array of apertures for each radius in r.
         ##  The extra "1e-8" term is just a temporary bug fix.
 
-        dr          = to_pixels( dr, self.scale, unit )
         self.r      = np.arange( 0, self.pix_x, dr )
         self.area   = np.pi * self.r**2
 
@@ -215,10 +214,7 @@ class Stamp:
         self.aperture   = np.array( self.aperture )
         self.pix_area   = np.array( self.pix_area )
 
-    def set_annulus( self, Ri, Ro, unit="pixels" ):
-
-        self.Ri         = to_pixels( Ri, self.scale, unit )
-        self.Ro         = to_pixels( Ro, self.scale, unit )
+    def set_annulus( self, Ri, Ro ):
 
         self.annulus    = np.zeros( self.shape, dtype="int32" ) + 1
 
@@ -247,7 +243,6 @@ class Stamp:
 
     def calc_psf( self, std ):
 
-        std         = to_pixels( std, self.scale, self.unit )
         self.psf    = np.exp( -.5 * (self.radial / std)**2 )
         self.frac   = 0 * self.r
 
@@ -295,7 +290,7 @@ class Stamp:
             self.flux[i]    = np.sum( self.aperture[i] * self.data )
 
         self.flux      *= self.area / self.pix_area
-        
+
         ##  Subtract the sky from the flux profile.
         ##  Correct for psf.
 
@@ -319,7 +314,6 @@ class Stamp:
 
     def smooth_flux( self, std ):
 
-        std     = to_pixels( std, self.scale, self.unit )
         flux    = np.zeros( self.flux.size )
 
         for i in range( 1, self.r.size - 1 ):
@@ -347,8 +341,6 @@ class Stamp:
         self.flux          -= self.sky
 
     def get_flux( self, R ):
-
-        R   = to_pixels( R, self.scale, self.unit )
 
         ##  Estimate the flux at the specifed radius by linear interpolation.
 
@@ -385,8 +377,6 @@ class Stamp:
                 R   = [ R ]
 
             for r in R:
-
-                r   = to_pixels( r, self.scale, unit )
 
                 axes.add_artist(
                     pyplot.Circle(
@@ -439,7 +429,6 @@ class Stamp:
             for r in R:
 
                 flux    = self.get_flux( r ) / np.max( self.flux )
-                r       = to_pixels( r, self.scale, self.unit )
                 axes.plot( [r, r], [0, flux], "y" )
 
         ##  Plot the annulus.
