@@ -377,8 +377,12 @@ class Stamp:
 
         if R is not None:
 
-            if isinstance( R, (int, float) ):
-                R   = [ R ]
+            if isinstance( R, (int,float) ):
+                R   = [ to_pixels(R, self.scale, self.unit) ]
+
+            else:
+                for i in range(len(R)):
+                    R[i] = to_pixels(R, self.scale, self.unit)
 
             for r in R:
 
