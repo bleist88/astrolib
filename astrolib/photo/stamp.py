@@ -233,9 +233,7 @@ class Stamp:
         j   = 0
 
         for i in range( self.r.size - 1 ):
-
             if self.r[i] <= R and R <= self.r[i+1]:
-
                 j   = i
 
         return  j
@@ -447,13 +445,10 @@ class Stamp:
 
         if annulus is True:
 
-            Ri      = to_pixels( self.Ri, self.scale, self.unit )
-            Ro      = to_pixels( self.Ri, self.scale, self.unit )
-
-            flux    = self.get_flux( Ri ) / np.max( self.flux )
+            flux    = self.get_flux( self.Ri ) / np.max( self.flux )
             axes.plot( [self.Ri, self.Ri], [0, flux], "y--" )
 
-            flux    = self.get_flux( Ro ) / np.max( self.flux )
+            flux    = self.get_flux( self.Ro ) / np.max( self.flux )
             axes.plot( [self.Ro, self.Ro], [0, flux], "y--" )
 
         ##  Set the scaling.
