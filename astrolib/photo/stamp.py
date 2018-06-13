@@ -430,6 +430,10 @@ class Stamp:
             if isinstance( R, (int,float) ):
                 R   = [ to_pixels(R, self.scale, self.unit) ]
 
+            else:
+                for i in range(len(R)):
+                    R[i] = to_pixels(R, self.scale, self.unit)
+
             for r in R:
 
                 flux    = self.get_flux( r ) / np.max( self.flux )
@@ -455,9 +459,7 @@ class Stamp:
         except:
             pass
 
-    def create_figure( self,
-        R=None, sigma=3, epsilon=0.03, yscale="log", saveas=False, unit="pixels"
-    ):
+    def create_figure( self, R=None, sigma=3, epsilon=0.03, yscale="log", saveas=False ):
 
         Fig     = pyplot.figure( figsize=(14,6) )
         Ax1     = Fig.add_subplot( 1,2,1 )
@@ -469,7 +471,7 @@ class Stamp:
         Ax2.set_xlabel("Aperture [pixel]")
         Ax2.set_ylabel("Flux [normalized]")
 
-        self.plot_stamp( Ax1, R=R, sigma=sigma, epsilon=epsilon, unit=unit )
+        self.plot_stamp( Ax1, R=R, sigma=sigma, epsilon=epsilon )
         self.plot_flux( Ax2, R=R, yscale=yscale )
 
         if saveas is False:
