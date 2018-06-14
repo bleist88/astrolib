@@ -1,9 +1,10 @@
-pro aper,image,xc,yc,mags,errap,sky,skyerr,phpadu,apr,skyradii,badpix, $
+pro aper, image, xc, yc, mags, errap, sky, skyerr, phpadu, apr, skyradii, badpix, $
        SETSKYVAL = setskyval,PRINT = print, SILENT = silent, FLUX=flux, $
        EXACT = exact, Nan = nan, READNOISE = readnoise, MEANBACK = meanback, $
        CLIPSIG=clipsig, MAXITER=maxiter,CONVERGE_NUM=converge_num, $
        MINSKY = minsky
-;+
+
+;;  ============================================================================
 ; NAME:
 ;      APER
 ; PURPOSE:
@@ -157,7 +158,7 @@ pro aper,image,xc,yc,mags,errap,sky,skyerr,phpadu,apr,skyradii,badpix, $
 ;       Don't ever modify input skyrad variable  W. Landsman Aug 2013
 ;       Avoid integer overflow for very big images W. Landsman/R. Gutermuth   Mar 2016
 ;       Eliminate limit on maximum number of sky pixels W. Landsman  Dec 2016
-;-
+;;  ============================================================================
 
  COMPILE_OPT IDL2
  On_error,2
@@ -302,8 +303,9 @@ ny  = uy-ly +1                      ;;  number of pixels Y direction
 dx  = xc-lx                         ;;  x coordinate of star's centroid in subarray
 dy  = yc-ly                         ;;  y coordinate of star's centroid in subarray
 
-edge    = (dx-0.5) < (nx+0.5-dx) < (dy-0.5) < (ny+0.5-dy) ;Closest edge to array
-badstar = ((xc LT 0.5) or (xc GT ncol-1.5) $  ;Stars too close to the edge
+;;  bad stars are stars to close to the edge of the image.
+edge    = (dx-0.5) < (nx+0.5-dx) < (dy-0.5) < (ny+0.5-dy)
+badstar = ((xc LT 0.5) or (xc GT ncol-1.5) $
         or (yc LT 0.5) or (yc GT nrow-1.5))
 
 badindex = where( badstar, Nbad)              ;Any stars outside image
@@ -321,159 +323,170 @@ if ( Nbad GT 0 ) then message, /INF, $
 ;;  Photometry
 ;;  ============================================================================
 
- for i = 0L, Nstars-1 do begin           ;Compute magnitudes for each star
-   apmag = replicate(badval, Naper)   & magerr = replicate(baderr, Naper)
-   skymod = 0. & skysig = 0. &  skyskw = 0.  ;Sky mode sigma and skew
-   if badstar[i] then goto, BADSTAR
-   error1=apmag   & error2 = apmag   & error3 = apmag
+;;  For each star...
+for i = 0L, Nstars-1 do begin
 
-   rotbuf = image[ lx[i]:ux[i], ly[i]:uy[i] ] ;Extract subarray from image
-;  RSQ will be an array, the same size as ROTBUF containing the square of
-;      the distance of each pixel to the center pixel.
+    ;;  Setup for calcuating magnitudes.
+    apmag = replicate(badval, Naper)   & magerr = replicate(baderr, Naper)
+    skymod = 0. & skysig = 0. &  skyskw = 0.  ;Sky mode sigma and skew
+    if badstar[i] then goto, BADSTAR
+    error1=apmag   & error2 = apmag   & error3 = apmag
 
+    ;;  Extract subarray from the image.
+    ;;  rotbuf  = image array
+    ;;  rsq     = array of squared pixel distance to center
 
-    dxsq = ( findgen( nx[i] ) - dx[i] )^2
-    rsq = fltarr( nx[i], ny[i], /NOZERO )
-   for ii = 0, ny[i]-1 do rsq[0,ii] = dxsq + (ii-dy[i])^2
+    rotbuf  = image[ lx[i]:ux[i], ly[i]:uy[i] ]
 
+    dxsq    = ( findgen( nx[i] ) - dx[i] )^2
+    rsq     = fltarr( nx[i], ny[i], /NOZERO )
+    for ii = 0, ny[i]-1 do rsq[0,ii] = dxsq + (ii-dy[i])^2
 
- if keyword_set(exact) then begin
-       nbox = lindgen(nx[i]*ny[i])
-       xx = reform( (nbox mod nx[i]), nx[i], ny[i])
-       yy = reform( (nbox/nx[i]),nx[i],ny[i])
-       x1 = abs(xx-dx[i])
-       y1 = abs(yy-dy[i])
-  endif else begin
-   r = sqrt(rsq) - 0.5    ;2-d array of the radius of each pixel in the subarray
- endelse
-
-;;  Select the annulus and calculate background.
-;;  ============================================
-
-;  Select pixels within sky annulus, and eliminate pixels falling
-;       below BADLO threshold.  SKYBUF will be 1-d array of sky pixels
- if N_elements(SETSKYVAL) EQ 0 then begin
-
- skypix = ( rsq GE rinsq ) and ( rsq LE routsq )
- if keyword_set(nan) then skypix = skypix and finite(rotbuf) $
- else if chk_badpix then skypix = skypix and ( rotbuf GT badpix[0] ) and $
-        (rotbuf LT badpix[1] )
- sindex =  where(skypix, Nsky)
-
- if ( nsky LT minsky ) then begin                       ;Sufficient sky pixels?
-    if ~silent then $
-        message,'There aren''t enough valid pixels in the sky annulus.',/con
-    goto, BADSTAR
- endif
-  skybuf = rotbuf[ sindex[0:nsky-1] ]
-
-  ;;  this is where the background is calculated using clipping.
-  ;;  where is this "meanclip"?
-  if keyword_set(meanback) then $
-   meanclip,skybuf,skymod,skysig, $
-         CLIPSIG=clipsig, MAXITER=maxiter, CONVERGE_NUM=converge_num  else $
-     mmm, skybuf, skymod, skysig, skyskw, readnoise=readnoise,minsky=minsky
-
-
-
-;  Obtain the mode, standard deviation, and skewness of the peak in the
-;      sky histogram, by calling MMM.
-
- skyvar = skysig^2    ;Variance of the sky brightness
- sigsq = skyvar/nsky  ;Square of standard error of mean sky brightness
-
-;If the modal sky value could not be determined, then all apertures for this
-; star are bad
-
- if ( skysig LT 0.0 ) then goto, BADSTAR
-
- skysig = skysig < 999.99      ;Don't overload output formats
- skyskw = skyskw >(-99)<999.9
- endif else begin
-    skymod = setskyval[0]
-    skysig = setskyval[1]
-    nsky = setskyval[2]
-    skyvar = skysig^2
-    sigsq = skyvar/nsky
-    skyskw = 0
-endelse
-
-;;  Select the aperture and calculate the background subtracted flux.
-;;  =================================================================
-
- for k = 0,Naper-1 do begin      ;Find pixels within each aperture
-
-   if ( edge[i] GE apr[k] ) then begin    ;Does aperture extend outside the image?
-     if keyword_set(EXACT) then begin
-       mask = fltarr(nx[i],ny[i])
-       good = where( ( x1 LT smallrad[k] ) and (y1 LT smallrad[k] ), Ngood)
-       if Ngood GT 0 then mask[good] = 1.0
-       bad = where(  (x1 GT bigrad[k]) or (y1 GT bigrad[k] ))   ;Fix 05-Dec-05
-       mask[bad] = -1
-
-       ;;  ??  What is happening here  ??
-
-       gfract = where(mask EQ 0.0, Nfract)
-       if Nfract GT 0 then mask[gfract] = $
-		PIXWT(dx[i],dy[i],apr[k],xx[gfract],yy[gfract]) > 0.0
-       thisap = where(mask GT 0.0)
-       thisapd = rotbuf[thisap]
-       fractn = mask[thisap]
-     endif else begin
-;
-       thisap = where( r LT apr[k] )   ;Select pixels within radius
-       thisapd = rotbuf[thisap]
-       thisapr = r[thisap]
-       fractn = (apr[k]-thisapr < 1.0 > 0.0 ) ;Fraction of pixels to count
-       full = fractn EQ 1.0
-       gfull = where(full, Nfull)
-       gfract = where(1 - full)
-       factor = (area[k] - Nfull ) / total(fractn[gfract])
-      fractn[gfract] = fractn[gfract]*factor
+    ;;  Calculate the radial matrix from the rsq.
+    ;;  For EXACT, calculate the exact fraction of pixels that are intersected
+    ;;  by the aperture boundry.
+    if keyword_set(exact) then begin
+        nbox    = lindgen(nx[i]*ny[i])
+        xx      = reform( (nbox mod nx[i]), nx[i], ny[i])
+        yy      = reform( (nbox/nx[i]),nx[i],ny[i])
+        x1      = abs(xx-dx[i])
+        y1      = abs(yy-dy[i])
+    endif else begin
+        r = sqrt(rsq) - 0.5 ;;  This -0.5 is not very precise, is it?!
     endelse
 
-;     If the pixel is bad, set the total counts in this aperture to a large
-;        negative number
-;
-   if keyword_set(NaN) then $
-      badflux =  min(finite(thisapd)) EQ 0   $
-   else if chk_badpix then begin
-     minthisapd = min(thisapd, max = maxthisapd)
-     badflux = (minthisapd LE badpix[0] ) or ( maxthisapd GE badpix[1])
-   endif else badflux = 0
+    ;;  The Annulus and Background
+    ;;  ==========================
 
-   if ~badflux then $
-                 apmag[k] = total(thisapd*fractn) ;Total over irregular aperture
-  endif
-endfor ;k
-   if keyword_set(flux) then g = where(finite(apmag), Ng)  else $
-                             g = where(abs(apmag - badval) GT 0.01, Ng)
-   if Ng GT 0 then begin
-  apmag[g] = apmag[g] - skymod*area[g]  ;Subtract sky from the integrated brightnesses
+    ;;  Select pixels within sky annulus, and eliminate pixels falling
+    ;;  below BADLO threshold.  SKYBUF will be 1-d array of sky pixels
+    if N_elements(SETSKYVAL) EQ 0 then begin
+        skypix = ( rsq GE rinsq ) and ( rsq LE routsq )
+        if keyword_set(nan) then skypix = skypix and finite(rotbuf) $
+        else if chk_badpix then skypix = skypix and ( rotbuf GT badpix[0] ) and $
+            (rotbuf LT badpix[1] )
+        sindex =  where(skypix, Nsky)
 
-; Add in quadrature 3 sources of error:
-; (1) random noise inside the star aperture, including readout noise and the
-; degree of contamination by other stars in the neighborhood, as estimated by
-; the scatter in the sky values (this standard error increases as the square
-; root of the area of the aperture).
-; (2) the Poisson statistics of the observed star brightness.
-; (3) the uncertainty of the mean sky brightness (this standard error
-; increases directly with the area of the aperture).
-; (4) NOT INCLUDED - need to add the zeropoint error.
+    ;;  Make sure there are enough good pixels in the annulus.
+    if ( nsky LT minsky ) then begin
+        if ~silent then $
+            message,'There aren''t enough valid pixels in the sky annulus.',/con
+        goto, BADSTAR
+     endif
+     skybuf = rotbuf[ sindex[0:nsky-1] ]
 
-   error1[g] = area[g]*skyvar   ;Scatter in sky values
-   error2[g] = (apmag[g] > 0)/phpadu  ;Random photon noise
-   error3[g] = sigsq*area[g]^2  ;Uncertainty in mean sky brightness
-   magerr[g] = sqrt(error1[g] + error2[g] + error3[g])
+     ;;  This is where the background is calculated using clipping.
+     ;;  How does meanclip work, exactly?
+     if keyword_set(meanback) then $
+        meanclip,skybuf,skymod,skysig, $
+        CLIPSIG=clipsig, MAXITER=maxiter, CONVERGE_NUM=converge_num  else $
+        mmm, skybuf, skymod, skysig, skyskw, readnoise=readnoise, minsky=minsky
 
-  if ~keyword_set(FLUX) then begin
-    good = where (apmag GT 0.0, Ngood)     ;Are there any valid integrated fluxes?
-    if ( Ngood GT 0 ) then begin               ;If YES then compute errors
-      magerr[good] = 1.0857*magerr[good]/apmag[good]   ;1.0857 = log(10)/2.5
-      apmag[good] =  25.-2.5*alog10(apmag[good])
-   endif
- endif
- endif
+    ;;  Obtain the mode, standard deviation and skewness of the peak in the sky
+    ;;  histogram by calling MMM.
+    skyvar = skysig^2       ;;  variance of the sky brightness
+    sigsq = skyvar/nsky     ;;  square of standard error of mean sky brightness
+
+    ;;  If the modal sky value couldn't be calculated, then BADSTAR.
+    if ( skysig LT 0.0 ) then goto, BADSTAR
+
+    skysig = skysig < 999.99      ;Don't overload output formats
+    skyskw = skyskw > (-99) < 999.9
+    endif else begin
+        skymod = setskyval[0]
+        skysig = setskyval[1]
+        nsky = setskyval[2]
+        skyvar = skysig^2
+        sigsq = skyvar/nsky
+        skyskw = 0
+    endelse
+
+    ;;  Select the aperture and calculate the background subtracted flux.
+    ;;  =================================================================
+
+    ;;  Find pixels within each k^th aperture.
+    for k = 0, Naper-1 do begin
+
+        ;;  Does aperture extend outside the image?
+        if ( edge[i] GE apr[k] ) then begin
+
+            ;;  Calculate fractions using EXACT.
+            if keyword_set(EXACT) then begin
+                mask = fltarr(nx[i],ny[i])
+                good = where( ( x1 LT smallrad[k] ) and (y1 LT smallrad[k] ), Ngood)
+                if Ngood GT 0 then mask[good] = 1.0
+                bad = where(  (x1 GT bigrad[k]) or (y1 GT bigrad[k] ))
+                mask[bad] = -1
+
+                ;;  ??  What is happening here  ??
+                gfract = where(mask EQ 0.0, Nfract)
+                if Nfract GT 0 then mask[gfract] = $
+        		    PIXWT(dx[i],dy[i],apr[k],xx[gfract],yy[gfract]) > 0.0
+                thisap = where(mask GT 0.0)
+                thisapd = rotbuf[thisap]
+                fractn = mask[thisap]
+
+            ;;  Calculate not using EXACT.
+            endif else begin
+                thisap = where( r LT apr[k] )   ;Select pixels within radius
+                thisapd = rotbuf[thisap]
+                thisapr = r[thisap]
+                fractn = (apr[k]-thisapr < 1.0 > 0.0 ) ;Fraction of pixels to count
+                full = fractn EQ 1.0
+                gfull = where(full, Nfull)
+                gfract = where(1 - full)
+                factor = (area[k] - Nfull ) / total(fractn[gfract])
+                fractn[gfract] = fractn[gfract]*factor
+            endelse
+
+            ;;  If the pixel is bad, set the total counts in this aperture to a
+            ;;  large negative number.
+            if keyword_set(NaN) then $
+                badflux =  min(finite(thisapd)) EQ 0   $
+            else if chk_badpix then begin
+                minthisapd = min(thisapd, max = maxthisapd)
+                badflux = (minthisapd LE badpix[0] ) or ( maxthisapd GE badpix[1])
+            endif else badflux = 0
+
+            ;;  Total over irregular aperture?
+            if ~badflux then $
+                apmag[k] = total(thisapd*fractn)
+        endif
+    endfor ;k
+
+    if keyword_set(flux) then g = where(finite(apmag), Ng)  else $
+                              g = where(abs(apmag - badval) GT 0.01, Ng)
+    if Ng GT 0 then begin
+
+        ;;  Subtract sky from the integrated brightnesses.
+        apmag[g] = apmag[g] - skymod*area[g]
+
+    ;;  Add in quadrature 3 sources of error:
+    ;;  (1) random noise inside the star aperture, including readout noise and
+    ;;      the degree of contamination by other stars in the neighborhood, as
+    ;;      estimated by the scatter in the sky values (this standard error
+    ;;      increases as the square root of the area of the aperture).
+    ;;  (2) the Poisson statistics of the observed star brightness.
+    ;;  (3) the uncertainty of the mean sky brightness (this standard error
+    ;;      increases directly with the area of the aperture).
+    ;;  (4) NOT INCLUDED - need to add the magnitude zeropoint error.
+
+        error1[g] = area[g]*skyvar          ;;  scatter in sky values
+        error2[g] = (apmag[g] > 0)/phpadu   ;;  random photon noise
+        error3[g] = sigsq*area[g]^2         ;;  uncertainty in mean sky
+        magerr[g] = sqrt(error1[g] + error2[g] + error3[g])
+
+        ;;  Are there any valid integrated fluxes?
+        ;;  If so, then compute errors.
+        ;;  1.0857 = log(10) / 2.5
+        if ~keyword_set(FLUX) then begin
+            good = where (apmag GT 0.0, Ngood)
+            if ( Ngood GT 0 ) then begin
+                magerr[good] = 1.0857 * magerr[good]/apmag[good]
+                apmag[good] =  25.-2.5*alog10(apmag[good])
+            endif
+        endif
+    endif
 
  BADSTAR:
 

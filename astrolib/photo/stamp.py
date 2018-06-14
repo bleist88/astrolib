@@ -69,13 +69,15 @@ class Stamp:
         self.annulus    = None      ##  array of annulus arrays of values {0,1}
 
         self.flux       = None      ##  array of pure flux values at radius r
-        self.slope      = None      ##  derivative of flux:  d(flux)/dr
-        self.curvature  = None      ##  second derivative of flux:  d2(flux)/dr2
+        self.profile    = None      ##  derivative of flux:  d(flux)/dr
+
         self.sky        = None      ##  derived sky background value
         self.sky_std    = None      ##  sky background standard deviation
         self.sky_flux   = None      ##  array of sky flux values at radius r
+
         self.psf        = None      ##  array of the point spread function
-        self.frac       = None      ##  array of psf fraction in aperture
+        self.psf_std    = None      ##  standard deviation of the psf
+        self.psf_frac   = None      ##  array of psf fraction in aperture
 
         ##  Initialize data members.
 
@@ -191,27 +193,27 @@ class Stamp:
 
         dr          = to_pixels( dr, self.scale, self.unit )
         self.r      = np.arange( 0, self.pix_x, dr )
-        self.area   = np.pi * self.r**2
+
+        ##  Initialize all arrays which relate to r.
+
+        self.flux       = 0 * self.r
+        self.profile    = 0 * self.r
+        self.pix_area   = 0 * self.r
+        self.area       = np.pi * self.r**2
 
         self.aperture   = []
-        self.pix_area   = []
+        self.pix_area   = 0 * self.r
 
-        for R in self.r:
+        for r in self.r:
 
             aperture    = np.zeros( self.shape, dtype="int32" ) + 1
             annulus     = np.zeros( self.shape, dtype="int32" ) + 1
 
-            aperture[
-                np.where(
-                    self.radial > R + 1e-8
-                )
-            ]   = 0
-
+            aperture[ np.where( self.radial > r + 1e-8 ) ]  = 0
             self.aperture.append( aperture )
-            self.pix_area.append( np.sum(aperture) )
+            self.pix_area[i]    = np.sum( aperture )
 
         self.aperture   = np.array( self.aperture )
-        self.pix_area   = np.array( self.pix_area )
 
     def set_annulus( self, Ri, Ro ):
 
@@ -228,7 +230,7 @@ class Stamp:
 
     def find_R( self, R ):
 
-        ##  Find and return the ith position of r in which r[i] < R < r[i+1].
+        ##  Find and return the i^th position of r in which r[i] < R < r[i+1].
 
         j   = 0
 
@@ -238,21 +240,19 @@ class Stamp:
 
         return  j
 
-    ##  ====================================================================  ##
-    ##  Photometry
+    def set_psf( self, std ):
 
-    def calc_psf( self, std ):
-
-        std         = to_pixels( std, self.scale, self.unit )
-        self.psf    = np.exp( -.5 * (self.radial / std)**2 )
-        self.frac   = 0 * self.r
+        self.psf_std    = to_pixels( std, self.scale, self.unit )
+        self.psf        = np.exp( -.5 * (self.radial / std)**2 )
+        self.psf_frac   = 0 * self.r
 
         for i in range( self.r.size ):
+            self.psf_frac[i]    = np.sum( self.apertures[i] * self.psf )
 
-            self.frac[i]    = np.sum( self.apertures[i] * self.psf )
+        self.psf_frac  /= np.sum( self.psf )
 
-        self.frac  /= np.sum( self.psf )
-        #self.frac  *= self.area / self.pix_area
+    ##  ========================================================================
+    ##  Photometry
 
     def calc_sky( self, sigma=3, epsilon=.03, iters=20 ):
 
@@ -266,9 +266,7 @@ class Stamp:
 
             mean0       = np.mean( sky_data )
             std         = np.std( sky_data )
-            sky_data    = sky_data[
-                np.where( sky_data < mean0 + sigma * std )
-            ]
+            sky_data    = sky_data[ np.where( sky_data < mean0 + sigma * std ) ]
 
             ##  Use SExtractor's background calculation.
 
@@ -279,10 +277,6 @@ class Stamp:
                 break
 
     def calc_flux( self, subtract=False, psf=False ):
-
-        self.flux       = 0 * self.r
-        self.slope      = 0 * self.r
-        self.curvature  = 0 * self.r
 
         ##  Calculate basic flux.
 
@@ -300,17 +294,11 @@ class Stamp:
         if psf is True:
             self.flux  /= self.frac
 
-        ##  Calculate the slope ( d(flux)/dr ) of the flux.
+        ##  Calculate the profile ( d(flux)/dr ) of the flux.
 
-        self.slope[1:-1]    = (self.flux[1:-1] - self.flux[:-2])
-        self.slope[1:-1]   /= (self.r[1:-1] - self.r[0:-2])
-        self.slope[-1]      = self.slope[-2]
-
-        ##  Calculate the derivative of the slope.
-
-        self.curvature[1:-1]    = (self.slope[1:-1] - self.slope[:-2])
-        self.curvature[1:-1]   /= (self.r[1:-1] - self.r[0:-2])
-        self.curvature[-1]      = self.curvature[-2]
+        self.profile[1:-1]  = (self.flux[1:-1] - self.flux[:-2])
+        self.profile[1:-1] /= (self.r[1:-1] - self.r[0:-2])
+        self.profile[-1]    = self.profile[-2]
 
     def smooth_flux( self, std ):
 
@@ -327,20 +315,9 @@ class Stamp:
 
         ##  Calculate the slope ( d(flux)/dr ) of the flux.
 
-        self.slope[1:-1]    = (self.flux[1:-1] - self.flux[:-2])
-        self.slope[1:-1]   /= (self.r[1:-1] - self.r[0:-2])
-        self.slope[-1]      = self.slope[-2]
-
-        ##  Calculate the derivative of the slope.
-
-        self.curvature[1:-1]    = (self.slope[1:-1] - self.slope[:-2])
-        self.curvature[1:-1]   /= (self.r[1:-1] - self.r[0:-2])
-        self.curvature[-1]      = self.curvature[-2]
-
-        ##  Subtract the sky.
-        #
-        #sky         = np.min( self.slope[1:-1] ) * np.pi * self.r**2
-        #self.flux  -= sky
+        self.profile[1:-1]  = (self.flux[1:-1] - self.flux[:-2])
+        self.profile[1:-1] /= (self.r[1:-1] - self.r[0:-2])
+        self.profile[-1]    = self.profile[-2]
 
     def get_flux( self, R ):
 
@@ -349,14 +326,7 @@ class Stamp:
         i       = self.find_R( R )
         dR      = R - self.r[i]
 
-        return  self.flux[i] + (dR * self.slope[i+1])
-
-    def get_psf_flux( self, subtract=False ):
-
-        if subtract is True:
-            return  np.sum( self.psf * (self.data - self.sky) )
-        else:
-            return  np.sum( self.psf * self.data )
+        return  self.flux[i] + (dR * self.profile[i+1])
 
     ##  ====================================================================  ##
     ##  Plotting
@@ -414,15 +384,13 @@ class Stamp:
         axes.set_ylim( 0, 1.1 )
 
         flux        = self.flux / np.max(self.flux)
-        slope       = self.slope / np.max(self.slope)
-        curvature   = self.curvature / np.max(self.curvature)
+        slope       = self.profile / np.max(self.profile)
         area        = self.area / self.pix_area
 
         ##  Plot the basic flux profile.
 
         axes.plot( self.r,  flux,        "k"    )
         axes.plot( self.r,  slope,       "c-"   )
-        axes.plot( self.r,  curvature,   "c--"  )
         axes.plot( self.r,  area,        "r--"  )
 
         ##  Plot aperture lines.
