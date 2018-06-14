@@ -204,7 +204,7 @@ class Stamp:
         self.aperture   = []
         self.pix_area   = 0 * self.r
 
-        for r in self.r:
+        for i, r in enumerate( self.r ):
 
             aperture    = np.zeros( self.shape, dtype="int32" ) + 1
             annulus     = np.zeros( self.shape, dtype="int32" ) + 1
