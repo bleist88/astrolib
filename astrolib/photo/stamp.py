@@ -181,14 +181,14 @@ class Stamp:
 
         try:
             self.data[ self.data_xy ]   = image[
-                self.grid[0] + im_x0 - self.x_c,
-                self.grid[1] + im_y0 - self.y_c
+                self.data_xy[0] + im_x0 - self.x_c,
+                self.data_xy[1] + im_y0 - self.y_c
             ]
             self.data               = np.rot90( self.data, k=k )
             #self.data              -= np.min( self.data )  ##  normalize?
 
         except:
-            self.data[ self.grid ]  = 0.0
+            self.data[ self.data_xy ]   = 0.0
 
     ##  ====================================================================  ##
     ##  Aperture Manipulation
