@@ -174,7 +174,7 @@ if N_elements(minsky) EQ 0 then minsky = 20
 if N_params() LT 3 then begin    ;Enough parameters supplied?
     print, $
     'Syntax - APER, image, xc, yc, [ mags, errap, sky, skyerr, phpadu, apr, '
-    print,'             skyrad, badpix, /EXACT, /FLUX, SETSKYVAL = ,PRINT=, ]'
+    print,'             skyrad, badpix, /EXACT, /FLUX, SETSKYVAL = , PRINT=, ]'
     print,'             /SILENT, /NAN, MINSKY='
     return
 endif
@@ -209,7 +209,7 @@ GET_BADPIX:
 
  if ( N_elements(apr) LT 1 ) then begin              ;Read in aperture sizes?
    apr = fltarr(10)
-   read, 'Enter first aperture radius: ',ap
+   read, 'Enter first aperture radius: ', ap
    apr[0] = ap
    ap = 'aper'
    for i = 1,9 do begin ;;  ?????
@@ -384,8 +384,8 @@ for i = 0L, Nstars-1 do begin
 
     ;;  Obtain the mode, standard deviation and skewness of the peak in the sky
     ;;  histogram by calling MMM.
-    skyvar = skysig^2       ;;  variance of the sky brightness
-    sigsq = skyvar/nsky     ;;  square of standard error of mean sky brightness
+    skyvar  = skysig^2      ;;  variance of the sky brightness
+    sigsq   = skyvar/nsky   ;;  square of standard error of mean sky brightness
 
     ;;  If the modal sky value couldn't be calculated, then BADSTAR.
     if ( skysig LT 0.0 ) then goto, BADSTAR
@@ -393,12 +393,12 @@ for i = 0L, Nstars-1 do begin
     skysig = skysig < 999.99      ;Don't overload output formats
     skyskw = skyskw > (-99) < 999.9
     endif else begin
-        skymod = setskyval[0]
-        skysig = setskyval[1]
-        nsky = setskyval[2]
-        skyvar = skysig^2
-        sigsq = skyvar/nsky
-        skyskw = 0
+        skymod  = setskyval[0]
+        skysig  = setskyval[1]
+        nsky    = setskyval[2]
+        skyvar  = skysig^2
+        sigsq   = skyvar/nsky
+        skyskw  = 0
     endelse
 
     ;;  Select the aperture and calculate the background subtracted flux.
@@ -413,7 +413,7 @@ for i = 0L, Nstars-1 do begin
             ;;  Calculate fractions using EXACT.
             if keyword_set(EXACT) then begin
                 mask = fltarr(nx[i],ny[i])
-                good = where( ( x1 LT smallrad[k] ) and (y1 LT smallrad[k] ), Ngood)
+                good = where( (x1 LT smallrad[k]) and (y1 LT smallrad[k]), Ngood)
                 if Ngood GT 0 then mask[good] = 1.0
                 bad = where(  (x1 GT bigrad[k]) or (y1 GT bigrad[k] ))
                 mask[bad] = -1
@@ -431,7 +431,7 @@ for i = 0L, Nstars-1 do begin
                 thisap = where( r LT apr[k] )   ;Select pixels within radius
                 thisapd = rotbuf[thisap]
                 thisapr = r[thisap]
-                fractn = (apr[k]-thisapr < 1.0 > 0.0 ) ;Fraction of pixels to count
+                fractn = (apr[k]-thisapr < 1.0 > 0.0 ) ;Fraction of pixel to count
                 full = fractn EQ 1.0
                 gfull = where(full, Nfull)
                 gfract = where(1 - full)

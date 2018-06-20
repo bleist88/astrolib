@@ -16,10 +16,10 @@ pix_units   = [
     "pixel", "pixels", "pix", "pixs", "p"
 ]
 
-def to_pixels( R, scale, unit ):
+def to_pixels( R, pix_scale, unit ):
 
     if unit in arc_units or unit in deg_units:
-        R   = R / scale
+        R   = R / pix_scale
     elif unit not in pix_units:
         print("The unit ", unit, " is not recognized.")
 
@@ -29,81 +29,86 @@ def to_pixels( R, scale, unit ):
 
 class Stamp:
 
-    def __init__( self, radius, scale, unit="pixels" ):
+    def __init__( self, S, pix_scale, unit="pixels" ):
 
         ##  Data Array Parameters
 
         self.shape      = None      ##  shape of array [pixels]
-        self.scale      = None      ##  [unit] / pixel
+        self.pix_scale  = None      ##  [unit] / pixel
         self.unit       = None      ##  angle unit
+        self.wcs        = None      ##  world coordinate system of image
 
         self.data       = None      ##  data array
-        self.grid       = None      ##  meshgrid (X, Y)
-        self.map        = None      ##  meshgrid (ALPHA, DELTA)
-        self.radial     = None      ##  radial distance array sqrt(X**2 + Y**2)
+        self.data_xy    = None      ##  meshgrid (X, Y)
+        self.data_r     = None      ##  radial distance array sqrt(X**2 + Y**2)
+        self.S          = None      ##  radial width of data array
 
-        self.WCS        = None      ##  world coordinate system of image
+        self.aperture   = None      ##  aperture array
+        self.R          = None      ##  aperture radius
+        self.ap_area    = None      ##  aperture area (number of pixels)
+        self.th_area    = None      ##  aperture area (circular area)
 
-        ##  Target Parameters
-
-        self.pix_x      = None      ##  center pixel coordinates [pixels]
-        self.pix_y      = None
-        self.pix_alpha  = None      ##  center pixel coordinates [unit]
-        self.pix_delta  = None
-        self.x          = None      ##  target coordinates [pixels]
-        self.y          = None
-        self.alpha      = None      ##  target coordinates [unit]
-        self.delta      = None
-        self.dx         = None      ##  offset ( x - pix_x )
-        self.dy         = None      ##  offset ( y - pix_y )
-
-        ##  Aperture and Photometry Parameters
-
-        self.r          = None      ##  array of aperture radii [pixels]
-        self.aperture   = None      ##  array of aperture arrays of values {0,1}
-        self.area       = None      ##  array of desired aperture area [pixels]
-        self.pix_area   = None      ##  array of true aperture area [pixels]
-
-        self.Ri         = None      ##  inner annulus radius [pixels]
-        self.Ro         = None      ##  outer annulus radius [pixels]
-        self.annulus    = None      ##  array of annulus arrays of values {0,1}
-
-        self.flux       = None      ##  array of pure flux values at radius r
-        self.profile    = None      ##  derivative of flux:  d(flux)/dr
-
-        self.sky        = None      ##  derived sky background value
-        self.sky_std    = None      ##  sky background standard deviation
-        self.sky_flux   = None      ##  array of sky flux values at radius r
+        self.annulus    = None      ##  annulus array
+        self.R_i        = None      ##  inner annulus radius
+        self.R_o        = None      ##  outer annulus radius
+        self.area_an    = None      ##  annulus area (number of pixels)
 
         self.psf        = None      ##  array of the point spread function
         self.psf_std    = None      ##  standard deviation of the psf
         self.psf_frac   = None      ##  array of psf fraction in aperture
 
-        ##  Initialize data members.
+        ##  Target Parameters
 
-        radius          = to_pixels( radius, scale, unit )
-        self.unit       = unit
+        self.x          = None      ##  target coordinates [pixels]
+        self.y          = None
+        self.alpha      = None      ##  target coordinates [unit]
+        self.delta      = None
 
-        self.shape      = int(2 * radius + 1), int(2 * radius + 1)
-        self.scale      = scale
+        self.x_c        = None      ##  center pixel coordinates [pixels]
+        self.y_c        = None
+        self.alpha_c    = None      ##  center pixel coordinates [unit]
+        self.delta_c    = None
 
-        self.pix_x      = int( self.shape[0] / 2 )
-        self.pix_y      = int( self.shape[1] / 2 )
+        self.x_off      = None      ##  offset ( x - x_c )
+        self.y_off      = None      ##  offset ( y - y_c )
+
+        ##  Photometry Parameters
+
+        self.flux       = None      ##  flux through aperture
+        self.flux_err   = None      ##  net flux error
+        self.mag        = None      ##  magnitude
+        self.mag_err    = None      ##  net magnitude error
+
+        self.sky        = None      ##  derived sky background value
+        self.sky_std    = None      ##  sky background standard deviation
+        self.sky_skew   = None      ##  skew in the sky histogram
+
+        self.php_err    = None      ##  random noise error
+        self.sky_err    = None      ##  uncertainty in the sky mean
+        self.std_err    = None      ##  random sky fluctuations
+
+        ##  Initialize members.
+
+        self.S          = to_pixels( S, pix_scale, unit ) + 0.5     ##  maybe?
+        self.unit       = unit      ##  add 0.5 to account for the center pixel
+
+        self.shape      = int(2 * self.S), int(2 * self.S)
+        self.pix_scale  = pix_scale
+
+        self.x_c        = int( self.shape[0] / 2 )
+        self.y_c        = int( self.shape[1] / 2 )
 
         self.data       = np.zeros( self.shape )
-        self.grid       = np.meshgrid(
+        self.data_xy    = np.meshgrid(
             np.arange( self.shape[0] ), np.arange( self.shape[1] )
         )
-        self.radial     = np.sqrt(
-            (self.grid[0] - self.pix_x)**2 + (self.grid[1] - self.pix_y)**2
+        self.data_r     = np.sqrt(
+            (self.data_xy[0] - self.x_c)**2 + (self.data_xy[1] - self.y_c)**2
         )
 
-        ##  Initialize photometry members.
-
-        self.annulus    = np.ones( self.shape )
-        self.sky        = 0.0
-        self.sky_std    = 0.0
-        self.frac       = 1.0
+        self.aperture   = np.zeros( self.shape, dtype="float64" )
+        self.annulus    = np.zeros( self.shape, dtype="float64" )
+        self.psf        = np.zeros( self.shape, dtype="float64" )
 
     ##  ====================================================================  ##
     ##  Data Manipulation
@@ -112,21 +117,23 @@ class Stamp:
 
         ## Get image data and wcs info.
 
-        self.WCS    = WCS( header )
+        self.wcs    = WCS( header )
 
         ##  Retrieve alternate coordinates (alpha, delta) <--> (x, y).
+        ##  If alpha and delta are given, calculate x and y.
+        ##  If x and y are given, calculate alpha and delta.
 
         if alpha is not None and delta is not None:
 
             position    = np.array([[ alpha, delta ]])
-            im_x        = self.WCS.wcs_world2pix( position, 1 )[0][1]
-            im_y        = self.WCS.wcs_world2pix( position, 1 )[0][0]
+            im_x        = self.wcs.wcs_world2pix( position, 1 )[0][1]
+            im_y        = self.wcs.wcs_world2pix( position, 1 )[0][0]
             im_x0       = int( im_x )
             im_y0       = int( im_y )
             self.alpha  = alpha
             self.delta  = delta
-            self.dx     = im_x - ( im_x0 + 0.5 )
-            self.dy     = im_y - ( im_y0 + 0.5 )
+            self.x_off  = im_x - ( im_x0 + 0.5 )
+            self.y_off  = im_y - ( im_y0 + 0.5 )
 
         elif x is not None and y is not None:
 
@@ -135,10 +142,10 @@ class Stamp:
             im_y        = y
             im_x0       = int( im_x )
             im_y0       = int( im_y )
-            self.alpha  = self.WCS.wcs_pix2world( position, 1 )[0][0]
-            self.delta  = self.WCS.wcs_pix2world( position, 1 )[0][1]
-            self.dx     = im_x - ( im_x0 + 0.5 )
-            self.dy     = im_y - ( im_y0 + 0.5 )
+            self.alpha  = self.wcs.wcs_pix2world( position, 1 )[0][0]
+            self.delta  = self.wcs.wcs_pix2world( position, 1 )[0][1]
+            self.x_off  = im_x - ( im_x0 + 0.5 )
+            self.y_off  = im_y - ( im_y0 + 0.5 )
 
         else:
 
@@ -151,14 +158,14 @@ class Stamp:
         ##  Determine Rotation factor (rotate in k factors of pi/2).
         ##  Get the delta of the pixels around the center.
 
-        around      = np.array([
-            [ im_x0,       im_y0 + 1  ],
+        around      = np.array([            ##  pixels above, below, to the
+            [ im_x0,       im_y0 + 1  ],    ##  right and to the left.
             [ im_x0 + 1,   im_y0      ],
             [ im_x0,       im_y0 - 1  ],
             [ im_x0 - 1,   im_y0      ]
         ])
 
-        positions   = self.WCS.wcs_pix2world( around, 1 )
+        positions   = self.wcs.wcs_pix2world( around, 1 )
 
         if (positions[1][1] - positions[3][1]) > 0:
             k  = 3
@@ -173,82 +180,53 @@ class Stamp:
         ##  Use "try:" in order to troubleshoot stamp exceeding the image.
 
         try:
-            self.data[self.grid]    = image[
-                self.grid[0] + im_x0 - self.pix_x,
-                self.grid[1] + im_y0 - self.pix_y
+            self.data[ self.data_xy ]   = image[
+                self.grid[0] + im_x0 - self.x_c,
+                self.grid[1] + im_y0 - self.y_c
             ]
             self.data               = np.rot90( self.data, k=k )
-            self.data              -= np.min( self.data )
+            #self.data              -= np.min( self.data )  ##  normalize?
 
         except:
-            self.data[self.grid]    = 0.0
+            self.data[ self.grid ]  = 0.0
 
     ##  ====================================================================  ##
     ##  Aperture Manipulation
 
-    def set_apertures( self, dr=1 ):
+    def set_aperture( self, R ):
 
-        ##  Create array of apertures for each radius in r.
-        ##  The extra "1e-8" term is just a temporary bug fix.
+        R                       = to_pixels( R, self.pix_scale, self.unit )
 
-        dr          = to_pixels( dr, self.scale, self.unit )
-        self.r      = np.arange( 0, self.pix_x, dr )
+        r_diff                  = R - self.data_r
+        inside                  = np.where( r_diff >= 0.5 )
+        boarder                 = np.where( (r_diff > -0.5) & (r_diff < 0.5) )
 
-        ##  Initialize all arrays which relate to r.
+        self.aperture          *= 0.0
+        self.aperture[inside]   = 1.0
+        self.aperture[boarder]  = r_diff[ boarder ] + 0.5
 
-        self.flux       = 0 * self.r
-        self.profile    = 0 * self.r
-        self.pix_area   = 0 * self.r
-        self.area       = np.pi * self.r**2
+        self.ap_area            = np.sum( self.aperture )
+        self.th_area            = np.pi * self.R**2
+        self.frac               = self.th_area / self.ap_area
 
-        self.aperture   = []
-        self.pix_area   = 0 * self.r
+    def set_annulus( self, R_i, R_o ):
 
-        for i, r in enumerate( self.r ):
+        self.R_i        = to_pixels( R_i, self.pix_scale, self.unit )
+        self.R_o        = to_pixels( R_o, self.pix_scale, self.unit )
 
-            aperture    = np.zeros( self.shape, dtype="int32" ) + 1
-            annulus     = np.zeros( self.shape, dtype="int32" ) + 1
-
-            aperture[ np.where( self.radial > r + 1e-8 ) ]  = 0
-            self.aperture.append( aperture )
-            self.pix_area[i]    = np.sum( aperture )
-
-        self.aperture   = np.array( self.aperture )
-
-    def set_annulus( self, Ri, Ro ):
-
-        self.Ri     = to_pixels( Ri, self.scale, self.unit )
-        self.Ro     = to_pixels( Ro, self.scale, self.unit )
-
-        self.annulus    = np.zeros( self.shape, dtype="int32" ) + 1
-
+        self.annulus   *= 0.0
         self.annulus[
-            np.where(
-                (self.radial < self.Ri) | (self.radial > self.Ro)
-            )
-        ]   = 0
+            np.where( (self.data_r >= self.R_i) & (self.data_r <= self.R_o) )
+        ]   = 1.0
 
-    def find_R( self, R ):
-
-        ##  Find and return the i^th position of r in which r[i] < R < r[i+1].
-
-        j   = 0
-
-        for i in range( self.r.size - 1 ):
-            if self.r[i] <= R and R <= self.r[i+1]:
-                j   = i
-
-        return  j
+        self.an_area    = np.sum( self.annulus )
 
     def set_psf( self, std ):
 
-        self.psf_std    = to_pixels( std, self.scale, self.unit )
-        self.psf        = np.exp( -.5 * (self.radial / std)**2 )
-        self.psf_frac   = 0 * self.r
+        self.psf_std    = to_pixels( std, self.pix_scale, self.unit )
+        self.psf        = np.exp( -.5 * (self.data_r / std)**2 )
 
-        for i in range( self.r.size ):
-            self.psf_frac[i]    = np.sum( self.apertures[i] * self.psf )
-
+        self.psf_frac   = np.sum( self.aperture * self.psf )
         self.psf_frac  /= np.sum( self.psf )
 
     ##  ========================================================================
@@ -278,173 +256,141 @@ class Stamp:
 
     def calc_flux( self, subtract=False, psf=False ):
 
-        ##  Calculate basic flux.
-
-        for i in range( self.r.size ):
-            self.flux[i]    = np.sum( self.aperture[i] * self.data )
-
-        self.flux      *= self.area / self.pix_area
-
-        ##  Subtract the sky from the flux profile.
-        ##  Correct for psf.
+        self.flux   = self.frac * np.sum( self.aperture * self.data )
 
         if subtract is True:
-            self.flux  -= self.sky * self.area
+            self.flux  -= self.sky * self.th_area
 
         if psf is True:
-            self.flux  /= self.frac
+            self.flux  *= self.psf_frac
 
-        ##  Calculate the profile ( d(flux)/dr ) of the flux.
+    def calc_errors( self ):
 
-        self.profile[1:-1]  = (self.flux[1:-1] - self.flux[:-2])
-        self.profile[1:-1] /= (self.r[1:-1] - self.r[0:-2])
-        self.profile[-1]    = self.profile[-2]
+        self.std_err    = self.th_area * self.sky_std**2
+        self.php_err    = self.flux / self.php
+        self.sky_err    = self.ap_area**2 * self.sky_std**2 / self.an_area
 
-    def smooth_flux( self, std ):
-
-        std     = to_pixels( std, self.scale, self.unit )
-
-        flux    = np.zeros( self.flux.size )
-
-        for i in range( 1, self.r.size - 1 ):
-
-            weights = np.exp( -.5 * ((self.r - self.r[i]) / std)**2 )
-            flux[i] = np.average( self.flux, weights=weights )
-
-        self.flux   = flux
-
-        ##  Calculate the slope ( d(flux)/dr ) of the flux.
-
-        self.profile[1:-1]  = (self.flux[1:-1] - self.flux[:-2])
-        self.profile[1:-1] /= (self.r[1:-1] - self.r[0:-2])
-        self.profile[-1]    = self.profile[-2]
-
-    def get_flux( self, R ):
-
-        ##  Estimate the flux at the specifed radius by linear interpolation.
-
-        i       = self.find_R( R )
-        dR      = R - self.r[i]
-
-        return  self.flux[i] + (dR * self.profile[i+1])
-
-    ##  ====================================================================  ##
-    ##  Plotting
-
-    def plot_stamp( self,
-        axes, R=None, annulus=True, sigma=3, epsilon=0.03,
-        cmap="gray", color="y", unit="pixels"
-    ):
-
-        axes.imshow(
-            photo.rescale( self.data, sigma=sigma, epsilon=epsilon ),
-            cmap=cmap
+        self.flux_err   = np.sqrt(
+            self.std_err**2 + self.php_err**2 + self.sky_err**2
         )
 
-        ##  Draw apertures.
-
-        if R is not None:
-
-            if isinstance( R, (int,float) ):
-                R   = [ to_pixels(R, self.scale, self.unit) ]
-
-            else:
-                for i in range(len(R)):
-                    R[i] = to_pixels(R, self.scale, self.unit)
-
-            for r in R:
-
-                axes.add_artist(
-                    pyplot.Circle(
-                        (self.pix_x, self.pix_y), radius=r,
-                        color=color, lw=2, fill=False
-                    )
-                )
-
-        ##  Draw annulus.
-
-        if annulus is True and self.annulus is not None:
-
-            axes.add_artist(
-                pyplot.Circle(
-                    (self.pix_x, self.pix_y), radius=self.Ri,
-                    color=color, linestyle="--", lw=2, fill=False
-                )
-            )
-
-            axes.add_artist(
-                pyplot.Circle(
-                    (self.pix_x, self.pix_y), radius=self.Ro,
-                    color=color, linestyle="--", lw=2, fill=False
-                )
-            )
-
-    def plot_flux( self, axes, R=None, annulus=True, yscale="log" ):
-
-        axes.set_ylim( 0, 1.1 )
-
-        flux        = self.flux / np.max(self.flux)
-        slope       = self.profile / np.max(self.profile)
-        area        = self.area / self.pix_area
-
-        ##  Plot the basic flux profile.
-
-        axes.plot( self.r,  flux,        "k"    )
-        axes.plot( self.r,  slope,       "c-"   )
-        axes.plot( self.r,  area,        "r--"  )
-
-        ##  Plot aperture lines.
-
-        if R is not None:
-
-            if isinstance( R, (int,float) ):
-                R   = [ to_pixels(R, self.scale, self.unit) ]
-
-            else:
-                for i in range(len(R)):
-                    R[i] = to_pixels(R, self.scale, self.unit)
-
-            for r in R:
-
-                flux    = self.get_flux( r ) / np.max( self.flux )
-                axes.plot( [r, r], [0, flux], "y" )
-
-        ##  Plot the annulus.
-
-        if annulus is True:
-
-            flux    = self.get_flux( self.Ri ) / np.max( self.flux )
-            axes.plot( [self.Ri, self.Ri], [0, flux], "y--" )
-
-            flux    = self.get_flux( self.Ro ) / np.max( self.flux )
-            axes.plot( [self.Ro, self.Ro], [0, flux], "y--" )
-
-        ##  Set the scaling.
-
-        try:
-            axes.set_yscale( yscale )
-        except:
-            pass
-
-    def create_figure( self, R=None, sigma=3, epsilon=0.03, yscale="log", saveas=False ):
-
-        Fig     = pyplot.figure( figsize=(14,6) )
-        Ax1     = Fig.add_subplot( 1,2,1 )
-        Ax2     = Fig.add_subplot( 1,2,2 )
-
-        Ax1.set_xlabel("x [pixel]")
-        Ax1.set_ylabel("y [pixel]")
-
-        Ax2.set_xlabel("Aperture [pixel]")
-        Ax2.set_ylabel("Flux [normalized]")
-
-        self.plot_stamp( Ax1, R=R, sigma=sigma, epsilon=epsilon )
-        self.plot_flux( Ax2, R=R, yscale=yscale )
-
-        if saveas is False:
-            pyplot.show()
-        else:
-            try:    ##  This is because of more problems with the log scale.
-                pyplot.savefig( saveas )
-            except:
-                pass
+    # ##  ====================================================================  ##
+    # ##  Plotting
+    #
+    # def plot_stamp( self,
+    #     axes, R=None, annulus=True, sigma=3, epsilon=0.03,
+    #     cmap="gray", color="y", unit="pixels"
+    # ):
+    #
+    #     axes.imshow(
+    #         photo.rescale( self.data, sigma=sigma, epsilon=epsilon ),
+    #         cmap=cmap
+    #     )
+    #
+    #     ##  Draw apertures.
+    #
+    #     if R is not None:
+    #
+    #         if isinstance( R, (int,float) ):
+    #             R   = [ to_pixels(R, self.pix_scale, self.unit) ]
+    #
+    #         else:
+    #             for i in range(len(R)):
+    #                 R[i] = to_pixels(R, self.pix_scale, self.unit)
+    #
+    #         for r in R:
+    #
+    #             axes.add_artist(
+    #                 pyplot.Circle(
+    #                     (self.x_c, self.y_c), radius=r,
+    #                     color=color, lw=2, fill=False
+    #                 )
+    #             )
+    #
+    #     ##  Draw annulus.
+    #
+    #     if annulus is True and self.annulus is not None:
+    #
+    #         axes.add_artist(
+    #             pyplot.Circle(
+    #                 (self.x_c, self.y_c), radius=self.R_i,
+    #                 color=color, linestyle="--", lw=2, fill=False
+    #             )
+    #         )
+    #
+    #         axes.add_artist(
+    #             pyplot.Circle(
+    #                 (self.x_c, self.y_c), radius=self.R_o,
+    #                 color=color, linestyle="--", lw=2, fill=False
+    #             )
+    #         )
+    #
+    # def plot_flux( self, axes, R=None, annulus=True, yscale="log" ):
+    #
+    #     axes.set_ylim( 0, 1.1 )
+    #
+    #     flux        = self.flux / np.max(self.flux)
+    #     slope       = self.profile / np.max(self.profile)
+    #     area        = self.area / self.pix_area
+    #
+    #     ##  Plot the basic flux profile.
+    #
+    #     axes.plot( self.r,  flux,        "k"    )
+    #     axes.plot( self.r,  slope,       "c-"   )
+    #     axes.plot( self.r,  area,        "r--"  )
+    #
+    #     ##  Plot aperture lines.
+    #
+    #     if R is not None:
+    #
+    #         if isinstance( R, (int,float) ):
+    #             R   = [ to_pixels(R, self.pix_scale, self.unit) ]
+    #
+    #         else:
+    #             for i in range(len(R)):
+    #                 R[i] = to_pixels(R, self.pix_scale, self.unit)
+    #
+    #         for r in R:
+    #
+    #             flux    = self.get_flux( r ) / np.max( self.flux )
+    #             axes.plot( [r, r], [0, flux], "y" )
+    #
+    #     ##  Plot the annulus.
+    #
+    #     if annulus is True:
+    #
+    #         flux    = self.get_flux( self.R_i ) / np.max( self.flux )
+    #         axes.plot( [self.R_i, self.R_i], [0, flux], "y--" )
+    #
+    #         flux    = self.get_flux( self.R_o ) / np.max( self.flux )
+    #         axes.plot( [self.R_o, self.R_o], [0, flux], "y--" )
+    #
+    #     ##  Set the scaling.
+    #
+    #     try:
+    #         axes.set_yscale( yscale )
+    #     except:
+    #         pass
+    #
+    # def create_figure( self, R=None, sigma=3, epsilon=0.03, yscale="log", saveas=False ):
+    #
+    #     Fig     = pyplot.figure( figsize=(14,6) )
+    #     Ax1     = Fig.add_subplot( 1,2,1 )
+    #     Ax2     = Fig.add_subplot( 1,2,2 )
+    #
+    #     Ax1.set_xlabel("x [pixel]")
+    #     Ax1.set_ylabel("y [pixel]")
+    #
+    #     Ax2.set_xlabel("Aperture [pixel]")
+    #     Ax2.set_ylabel("Flux [normalized]")
+    #
+    #     self.plot_stamp( Ax1, R=R, sigma=sigma, epsilon=epsilon )
+    #     self.plot_flux( Ax2, R=R, yscale=yscale )
+    #
+    #     if saveas is False:
+    #         pyplot.show()
+    #     else:
+    #         try:    ##  This is because of more problems with the log scale.
+    #             pyplot.savefig( saveas )
+    #         except:
+    #             pass
