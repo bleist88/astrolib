@@ -47,6 +47,7 @@ class Stamp:
         self.R          = None      ##  aperture radius
         self.ap_area    = None      ##  aperture area (number of pixels)
         self.th_area    = None      ##  aperture area (circular area)
+        self.data_xy       = None      ##  number of pixels / circular area
 
         self.annulus    = None      ##  annulus array
         self.R_i        = None      ##  inner annulus radius
@@ -130,10 +131,13 @@ class Stamp:
             im_y        = self.wcs.wcs_world2pix( position, 1 )[0][0]
             im_x0       = int( im_x )
             im_y0       = int( im_y )
+
             self.alpha  = alpha
             self.delta  = delta
             self.x_off  = im_x - ( im_x0 + 0.5 )
             self.y_off  = im_y - ( im_y0 + 0.5 )
+            self.x      = self.x_c + self.x_off
+            self.y      = self.y_c + self.y_off
 
         elif x is not None and y is not None:
 
@@ -142,10 +146,13 @@ class Stamp:
             im_y        = y
             im_x0       = int( im_x )
             im_y0       = int( im_y )
+
             self.alpha  = self.wcs.wcs_pix2world( position, 1 )[0][0]
             self.delta  = self.wcs.wcs_pix2world( position, 1 )[0][1]
             self.x_off  = im_x - ( im_x0 + 0.5 )
             self.y_off  = im_y - ( im_y0 + 0.5 )
+            self.x      = self.x_c + self.x_off
+            self.y      = self.y_c + self.y_off
 
         else:
 
@@ -207,7 +214,7 @@ class Stamp:
 
         self.ap_area            = np.sum( self.aperture )
         self.th_area            = np.pi * self.R**2
-        self.frac               = self.th_area / self.ap_area
+        self.frac               = self.ap_area / self.th_area
 
     def set_annulus( self, R_i, R_o ):
 
