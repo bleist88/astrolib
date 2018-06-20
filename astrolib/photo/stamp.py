@@ -195,9 +195,9 @@ class Stamp:
 
     def set_aperture( self, R ):
 
-        R                       = to_pixels( R, self.pix_scale, self.unit )
+        self.R                  = to_pixels( R, self.pix_scale, self.unit )
 
-        r_diff                  = R - self.data_r
+        r_diff                  = self.R - self.data_r
         inside                  = np.where( r_diff >= 0.5 )
         boarder                 = np.where( (r_diff > -0.5) & (r_diff < 0.5) )
 
