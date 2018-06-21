@@ -134,8 +134,8 @@ class Stamp:
 
             self.alpha  = alpha
             self.delta  = delta
-            self.x_off  = im_x - ( im_x_c + 0.5 )
-            self.y_off  = im_y - ( im_y_c + 0.5 )
+            self.x_off  = im_x - ( im_x_c - 0.5 )
+            self.y_off  = im_y - ( im_y_c - 0.5 )
             self.x      = self.x_c + self.x_off
             self.y      = self.y_c + self.y_off
 
@@ -149,8 +149,8 @@ class Stamp:
 
             self.alpha  = self.wcs.wcs_pix2world( position, 1 )[0][0]
             self.delta  = self.wcs.wcs_pix2world( position, 1 )[0][1]
-            self.x_off  = im_x - ( im_x_c + 0.5 )
-            self.y_off  = im_y - ( im_y_c + 0.5 )
+            self.x_off  = im_x - ( im_x_c - 0.5 )
+            self.y_off  = im_y - ( im_y_c - 0.5 )
             self.x      = self.x_c + self.x_off
             self.y      = self.y_c + self.y_off
 
