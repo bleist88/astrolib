@@ -321,7 +321,7 @@ class Stamp:
             )
         )
 
-    def plot_aperture( self, axis, annulus=True ):
+    def plot_aperture( self, axis, annulus=True, color="y" ):
 
         if annulus is True:
             axis.imshow( self.aperture + self.annulus )
