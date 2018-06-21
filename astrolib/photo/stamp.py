@@ -302,7 +302,7 @@ class Stamp:
 
         axis.add_artist(
             pyplot.Circle(
-                (self.x, self.y), radius=r, color=color, lw=2, fill=False
+                (self.x, self.y), radius=self.R, color=color, lw=2, fill=False
             )
         )
 
