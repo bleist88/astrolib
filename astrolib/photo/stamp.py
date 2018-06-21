@@ -289,9 +289,7 @@ class Stamp:
     ##  ====================================================================  ##
     ##  Plotting
 
-    def plot_stamp( self, axis, sigma=3, epsilon=0.03, cmap="gray", color="y",
-                          apertures=True, unit="pixels"
-    ):
+    def plot_stamp( self, axis, sigma=3, epsilon=0.03, cmap="gray", color="y" ):
 
         axis.imshow(
             photo.rescale( self.data, sigma=sigma, epsilon=epsilon ),
@@ -300,29 +298,27 @@ class Stamp:
 
         ##  Draw apertures.
 
-        if apetures is True:
+        axis.plot( self.x, self.y, "rx", ms=2 )
 
-            axis.plot( self.x, self.y, "rx", ms=2 )
-
-            axis.add_artist(
-                pyplot.Circle(
-                    (self.x, self.y), radius=r, color=color, lw=2, fill=False
-                )
+        axis.add_artist(
+            pyplot.Circle(
+                (self.x, self.y), radius=r, color=color, lw=2, fill=False
             )
+        )
 
-            axis.add_artist(
-                pyplot.Circle(
-                    (self.x, self.y), radius=self.R_i,
-                    color=color, linestyle="--", lw=2, fill=False
-                )
+        axis.add_artist(
+            pyplot.Circle(
+                (self.x, self.y), radius=self.R_i,
+                color=color, linestyle="--", lw=2, fill=False
             )
+        )
 
-            axis.add_artist(
-                pyplot.Circle(
-                    (self.x, self.y), radius=self.R_o,
-                    color=color, linestyle="--", lw=2, fill=False
-                )
+        axis.add_artist(
+            pyplot.Circle(
+                (self.x, self.y), radius=self.R_o,
+                color=color, linestyle="--", lw=2, fill=False
             )
+        )
 
     # def plot_flux( self, axis, R=None, annulus=True, yscale="log" ):
     #
