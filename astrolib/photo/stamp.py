@@ -286,60 +286,47 @@ class Stamp:
             self.std_err**2 + self.php_err**2 + self.sky_err**2
         )
 
-    # ##  ====================================================================  ##
-    # ##  Plotting
+    ##  ====================================================================  ##
+    ##  Plotting
+
+    def plot_stamp( self, axis, sigma=3, epsilon=0.03, cmap="gray", color="y",
+                          apertures=True, unit="pixels"
+    ):
+
+        axis.imshow(
+            photo.rescale( self.data, sigma=sigma, epsilon=epsilon ),
+            cmap=cmap
+        )
+
+        ##  Draw apertures.
+
+        if apetures is True:
+
+            axis.plot( self.x, self.y, "rx", ms=2 )
+
+            axis.add_artist(
+                pyplot.Circle(
+                    (self.x, self.y), radius=r, color=color, lw=2, fill=False
+                )
+            )
+
+            axis.add_artist(
+                pyplot.Circle(
+                    (self.x, self.y), radius=self.R_i,
+                    color=color, linestyle="--", lw=2, fill=False
+                )
+            )
+
+            axis.add_artist(
+                pyplot.Circle(
+                    (self.x, self.y), radius=self.R_o,
+                    color=color, linestyle="--", lw=2, fill=False
+                )
+            )
+
+    # def plot_flux( self, axis, R=None, annulus=True, yscale="log" ):
     #
-    # def plot_stamp( self,
-    #     axes, R=None, annulus=True, sigma=3, epsilon=0.03,
-    #     cmap="gray", color="y", unit="pixels"
-    # ):
-    #
-    #     axes.imshow(
-    #         photo.rescale( self.data, sigma=sigma, epsilon=epsilon ),
-    #         cmap=cmap
-    #     )
-    #
-    #     ##  Draw apertures.
-    #
-    #     if R is not None:
-    #
-    #         if isinstance( R, (int,float) ):
-    #             R   = [ to_pixels(R, self.pix_scale, self.unit) ]
-    #
-    #         else:
-    #             for i in range(len(R)):
-    #                 R[i] = to_pixels(R, self.pix_scale, self.unit)
-    #
-    #         for r in R:
-    #
-    #             axes.add_artist(
-    #                 pyplot.Circle(
-    #                     (self.x_c, self.y_c), radius=r,
-    #                     color=color, lw=2, fill=False
-    #                 )
-    #             )
-    #
-    #     ##  Draw annulus.
-    #
-    #     if annulus is True and self.annulus is not None:
-    #
-    #         axes.add_artist(
-    #             pyplot.Circle(
-    #                 (self.x_c, self.y_c), radius=self.R_i,
-    #                 color=color, linestyle="--", lw=2, fill=False
-    #             )
-    #         )
-    #
-    #         axes.add_artist(
-    #             pyplot.Circle(
-    #                 (self.x_c, self.y_c), radius=self.R_o,
-    #                 color=color, linestyle="--", lw=2, fill=False
-    #             )
-    #         )
-    #
-    # def plot_flux( self, axes, R=None, annulus=True, yscale="log" ):
-    #
-    #     axes.set_ylim( 0, 1.1 )
+    #     axis.set_ylim( 0, 1.1 )
     #
     #     flux        = self.flux / np.max(self.flux)
     #     slope       = self.profile / np.max(self.profile)
@@ -347,9 +334,9 @@ class Stamp:
     #
     #     ##  Plot the basic flux profile.
     #
-    #     axes.plot( self.r,  flux,        "k"    )
-    #     axes.plot( self.r,  slope,       "c-"   )
-    #     axes.plot( self.r,  area,        "r--"  )
+    #     axis.plot( self.r,  flux,        "k"    )
+    #     axis.plot( self.r,  slope,       "c-"   )
+    #     axis.plot( self.r,  area,        "r--"  )
     #
     #     ##  Plot aperture lines.
     #
@@ -365,22 +352,22 @@ class Stamp:
     #         for r in R:
     #
     #             flux    = self.get_flux( r ) / np.max( self.flux )
-    #             axes.plot( [r, r], [0, flux], "y" )
+    #             axis.plot( [r, r], [0, flux], "y" )
     #
     #     ##  Plot the annulus.
     #
     #     if annulus is True:
     #
     #         flux    = self.get_flux( self.R_i ) / np.max( self.flux )
-    #         axes.plot( [self.R_i, self.R_i], [0, flux], "y--" )
+    #         axis.plot( [self.R_i, self.R_i], [0, flux], "y--" )
     #
     #         flux    = self.get_flux( self.R_o ) / np.max( self.flux )
-    #         axes.plot( [self.R_o, self.R_o], [0, flux], "y--" )
+    #         axis.plot( [self.R_o, self.R_o], [0, flux], "y--" )
     #
     #     ##  Set the scaling.
     #
     #     try:
-    #         axes.set_yscale( yscale )
+    #         axis.set_yscale( yscale )
     #     except:
     #         pass
     #
