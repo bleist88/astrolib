@@ -320,6 +320,33 @@ class Stamp:
             )
         )
 
+    def plot_aperture( self, axis, annulus=True ):
+
+        if annulus is True:
+            axis.imshow( self.aperture + self.annulus )
+        else:
+            axis.imshow( self.aperture )
+
+        axis.add_artist(
+            pyplot.Circle(
+                (self.x, self.y), radius=self.R, color=color, lw=2, fill=False
+            )
+        )
+
+        axis.add_artist(
+            pyplot.Circle(
+                (self.x, self.y), radius=self.R_i,
+                color=color, linestyle="--", lw=2, fill=False
+            )
+        )
+
+        axis.add_artist(
+            pyplot.Circle(
+                (self.x, self.y), radius=self.R_o,
+                color=color, linestyle="--", lw=2, fill=False
+            )
+        )        
+
     # def plot_flux( self, axis, R=None, annulus=True, yscale="log" ):
     #
     #     axis.set_ylim( 0, 1.1 )
