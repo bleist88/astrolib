@@ -412,45 +412,45 @@ for i = 0L, Nstars-1 do begin
 
             ;;  Calculate fractions using EXACT.
             if keyword_set(EXACT) then begin
-                mask = fltarr(nx[i],ny[i])
-                good = where( (x1 LT smallrad[k]) and (y1 LT smallrad[k]), Ngood)
+                mask    = fltarr(nx[i],ny[i])
+                good    = where( (x1 LT smallrad[k]) and (y1 LT smallrad[k]), Ngood)
                 if Ngood GT 0 then mask[good] = 1.0
-                bad = where(  (x1 GT bigrad[k]) or (y1 GT bigrad[k] ))
+                bad     = where(  (x1 GT bigrad[k]) or (y1 GT bigrad[k] ))
                 mask[bad] = -1
 
                 ;;  ??  What is happening here  ??
-                gfract = where(mask EQ 0.0, Nfract)
+                gfract  = where(mask EQ 0.0, Nfract)
                 if Nfract GT 0 then mask[gfract] = $
         		    PIXWT(dx[i],dy[i],apr[k],xx[gfract],yy[gfract]) > 0.0
-                thisap = where(mask GT 0.0)
+                thisap  = where(mask GT 0.0)
                 thisapd = rotbuf[thisap]
-                fractn = mask[thisap]
+                fractn  = mask[thisap]
 
             ;;  Calculate not using EXACT.
             endif else begin
-                thisap = where( r LT apr[k] )   ;Select pixels within radius
+                thisap  = where( r LT apr[k] )   ;Select pixels within radius
                 thisapd = rotbuf[thisap]
                 thisapr = r[thisap]
-                fractn = (apr[k]-thisapr < 1.0 > 0.0 ) ;Fraction of pixel to count
-                full = fractn EQ 1.0
-                gfull = where(full, Nfull)
-                gfract = where(1 - full)
-                factor = (area[k] - Nfull ) / total(fractn[gfract])
+                fractn  = (apr[k]-thisapr < 1.0 > 0.0 ) ;Fraction of pixel to count
+                full    = fractn EQ 1.0
+                gfull   = where(full, Nfull)
+                gfract  = where(1 - full)
+                factor  = (area[k] - Nfull ) / total(fractn[gfract])
                 fractn[gfract] = fractn[gfract]*factor
             endelse
 
             ;;  If the pixel is bad, set the total counts in this aperture to a
             ;;  large negative number.
             if keyword_set(NaN) then $
-                badflux =  min(finite(thisapd)) EQ 0   $
+                badflux     =  min(finite(thisapd)) EQ 0   $
             else if chk_badpix then begin
-                minthisapd = min(thisapd, max = maxthisapd)
-                badflux = (minthisapd LE badpix[0] ) or ( maxthisapd GE badpix[1])
+                minthisapd  = min(thisapd, max = maxthisapd)
+                badflux     = (minthisapd LE badpix[0] ) or ( maxthisapd GE badpix[1])
             endif else badflux = 0
 
             ;;  Total over irregular aperture?
             if ~badflux then $
-                apmag[k] = total(thisapd*fractn)
+                apmag[k]    = total(thisapd*fractn)
         endif
     endfor ;k
 

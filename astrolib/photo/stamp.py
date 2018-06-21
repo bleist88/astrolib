@@ -266,15 +266,16 @@ class Stamp:
             if np.abs( mean0 - self.sky ) / mean0 < epsilon or iters <= 0:
                 break
 
-    def calc_flux( self, subtract=False, psf=False ):
+    def calc_flux( self, subtract=False, psf=False, zero=30.0 ):
 
         self.flux   = self.frac * np.sum( self.aperture * self.data )
 
         if subtract is True:
             self.flux  -= self.sky * self.th_area
-
         if psf is True:
             self.flux  *= self.psf_frac
+
+        self.mag    = zero - 2.5 * np.log10( self.flux )
 
     def calc_errors( self ):
 
@@ -345,7 +346,7 @@ class Stamp:
                 (self.x, self.y), radius=self.R_o,
                 color=color, linestyle="--", lw=2, fill=False
             )
-        )        
+        )
 
     # def plot_flux( self, axis, R=None, annulus=True, yscale="log" ):
     #

@@ -60,3 +60,6 @@ err_zero    = mag zeropoint error
     err_total   = sqrt( e1**2 + e2**2 + e3**2 ) --> magnitude
 
     err_total   = sqrt( error_total**2 + err_zero**2 )
+
+6.  Magnitudes in aper.pro are defined by a magnitude zeropoint of 25.0.  The
+    keyword /FLUX can be provided to specify the flux unit in the image.
