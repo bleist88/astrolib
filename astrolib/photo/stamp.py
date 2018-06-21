@@ -129,13 +129,13 @@ class Stamp:
             position    = np.array([[ alpha, delta ]])
             im_x        = self.wcs.wcs_world2pix( position, 1 )[0][1]
             im_y        = self.wcs.wcs_world2pix( position, 1 )[0][0]
-            im_x0       = int( im_x )
-            im_y0       = int( im_y )
+            im_x_c      = int( im_x )
+            im_y_c      = int( im_y )
 
             self.alpha  = alpha
             self.delta  = delta
-            self.x_off  = im_x - ( im_x0 + 0.5 )
-            self.y_off  = im_y - ( im_y0 + 0.5 )
+            self.x_off  = im_x - im_x_c
+            self.y_off  = im_y - im_y_c
             self.x      = self.x_c + self.x_off
             self.y      = self.y_c + self.y_off
 
@@ -144,13 +144,13 @@ class Stamp:
             position    = np.array([[ x, y ]])
             im_x        = x
             im_y        = y
-            im_x0       = int( im_x )
-            im_y0       = int( im_y )
+            im_x_c      = int( im_x )
+            im_y_c      = int( im_y )
 
             self.alpha  = self.wcs.wcs_pix2world( position, 1 )[0][0]
             self.delta  = self.wcs.wcs_pix2world( position, 1 )[0][1]
-            self.x_off  = im_x - ( im_x0 + 0.5 )
-            self.y_off  = im_y - ( im_y0 + 0.5 )
+            self.x_off  = im_x - ( im_x_c )
+            self.y_off  = im_y - ( im_y_c )
             self.x      = self.x_c + self.x_off
             self.y      = self.y_c + self.y_off
 
@@ -165,11 +165,11 @@ class Stamp:
         ##  Determine Rotation factor (rotate in k factors of pi/2).
         ##  Get the delta of the pixels around the center.
 
-        around      = np.array([            ##  pixels above, below, to the
-            [ im_x0,       im_y0 + 1  ],    ##  right and to the left.
-            [ im_x0 + 1,   im_y0      ],
-            [ im_x0,       im_y0 - 1  ],
-            [ im_x0 - 1,   im_y0      ]
+        around      = np.array([                ##  pixels above, below, to the
+            [ im_x_c,       im_y_c + 1  ],      ##  right and to the left.
+            [ im_x_c + 1,   im_y_c      ],
+            [ im_x_c,       im_y_c - 1  ],
+            [ im_x_c - 1,   im_y_c      ]
         ])
 
         positions   = self.wcs.wcs_pix2world( around, 1 )
@@ -188,8 +188,8 @@ class Stamp:
 
         try:
             self.data[ self.data_xy ]   = image[
-                self.data_xy[0] + im_x0 - self.x_c,
-                self.data_xy[1] + im_y0 - self.y_c
+                self.data_xy[0] + im_x_c - self.x_c,
+                self.data_xy[1] + im_y_c - self.y_c
             ]
             self.data               = np.rot90( self.data, k=k )
             #self.data              -= np.min( self.data )  ##  normalize?
