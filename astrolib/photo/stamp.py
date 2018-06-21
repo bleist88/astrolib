@@ -134,8 +134,8 @@ class Stamp:
 
             self.alpha  = alpha
             self.delta  = delta
-            self.x_off  = im_x - im_x_c
-            self.y_off  = im_y - im_y_c
+            self.x_off  = im_x - ( im_x_c + 0.5 )
+            self.y_off  = im_y - ( im_y_c + 0.5 )
             self.x      = self.x_c + self.x_off
             self.y      = self.y_c + self.y_off
 
@@ -149,8 +149,8 @@ class Stamp:
 
             self.alpha  = self.wcs.wcs_pix2world( position, 1 )[0][0]
             self.delta  = self.wcs.wcs_pix2world( position, 1 )[0][1]
-            self.x_off  = im_x - ( im_x_c )
-            self.y_off  = im_y - ( im_y_c )
+            self.x_off  = im_x - ( im_x_c + 0.5 )
+            self.y_off  = im_y - ( im_y_c + 0.5 )
             self.x      = self.x_c + self.x_off
             self.y      = self.y_c + self.y_off
 
@@ -192,10 +192,15 @@ class Stamp:
                 self.data_xy[1] + im_y_c - self.y_c
             ]
             self.data               = np.rot90( self.data, k=k )
-            #self.data              -= np.min( self.data )  ##  normalize?
 
         except:
             self.data[ self.data_xy ]   = 0.0
+
+        ##  Determine the radial grid.
+
+        self.data_r     = np.sqrt(
+            (self.data_xy[0] - self.x)**2 + (self.data_xy[1] - self.y)**2
+        )
 
     ##  ====================================================================  ##
     ##  Aperture Manipulation
