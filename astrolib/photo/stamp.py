@@ -290,16 +290,16 @@ class Stamp:
     ##  ====================================================================  ##
     ##  Plotting
 
-    def plot_stamp( self, axis, sigma=3, epsilon=0.03, cmap="gray", color="y" ):
+    def plot_stamp( self, axis, sigma=3, epsilon=0.03, cmap="gray", color="r" ):
 
         axis.imshow(
             photo.rescale( self.data, sigma=sigma, epsilon=epsilon ),
-            cmap=cmap, color=color
+            cmap=cmap
         )
 
         ##  Draw apertures.
 
-        axis.plot( self.x, self.y, "rx", ms=2 )
+        axis.plot( self.x, self.y, color + "x", ms=2 )
 
         axis.add_artist(
             pyplot.Circle( (self.x, self.y), radius=self.R,
@@ -319,12 +319,14 @@ class Stamp:
             )
         )
 
-    def plot_aperture( self, axis, annulus=True, cmap="gray", color="y" ):
+    def plot_aperture( self, axis, annulus=True, cmap="gray", color="r" ):
 
         if annulus is True:
             axis.imshow( self.aperture + self.annulus, cmap=cmap )
         else:
             axis.imshow( self.aperture, cmap=cmap )
+
+        xis.plot( self.x, self.y, color + "x", ms=2 )
 
         axis.add_artist(
             pyplot.Circle( (self.x, self.y), radius=self.R,

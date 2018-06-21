@@ -28,3 +28,4 @@ clean:
 	rm -r astrolib.egg-info;
 	rm -r build;
 	rm record.txt;
+	conda build purge;
