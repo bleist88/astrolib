@@ -483,7 +483,7 @@ for i = 0L, Nstars-1 do begin
             good = where (apmag GT 0.0, Ngood)
             if ( Ngood GT 0 ) then begin
                 magerr[good] = 1.0857 * magerr[good]/apmag[good]
-                apmag[good] =  25.-2.5*alog10(apmag[good])
+                apmag[good] =  25. - 2.5 * alog10(apmag[good])
             endif
         endif
     endif

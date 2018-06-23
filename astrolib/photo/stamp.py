@@ -75,18 +75,18 @@ class Stamp:
 
         ##  Photometry Parameters
 
-        self.flux       = None      ##  flux through aperture
-        self.flux_err   = None      ##  net flux error
-        self.mag        = None      ##  magnitude
-        self.mag_err    = None      ##  net magnitude error
+        self.flux       = np.nan      ##  flux through aperture
+        self.flux_err   = np.nan      ##  net flux error
+        self.mag        = np.nan      ##  magnitude
+        self.mag_err    = np.nan      ##  net magnitude error
 
-        self.sky        = None      ##  derived sky background value
-        self.sky_std    = None      ##  sky background standard deviation
-        self.sky_skew   = None      ##  skew in the sky histogram
+        self.sky        = np.nan      ##  derived sky background value
+        self.sky_std    = np.nan      ##  sky background standard deviation
+        self.sky_skew   = np.nan      ##  skew in the sky histogram
 
-        self.php_err    = None      ##  random noise error
-        self.sky_err    = None      ##  uncertainty in the sky mean
-        self.std_err    = None      ##  random sky fluctuations
+        self.php_err    = np.nan      ##  random noise error
+        self.sky_err    = np.nan      ##  uncertainty in the sky mean
+        self.std_err    = np.nan      ##  random sky fluctuations
 
         ##  Initialize members.
 
@@ -284,8 +284,10 @@ class Stamp:
         self.sky_err    = self.ap_area**2 * self.sky_std**2 / self.an_area
 
         self.flux_err   = np.sqrt(
-            self.std_err**2 + self.php_err**2 + self.sky_err**2
+            self.std_err**2 + self.sky_err**2
         )
+
+        self.mag_err    = 1.0857 * self.flux_err / self.flux
 
     ##  ====================================================================  ##
     ##  Plotting
@@ -326,7 +328,7 @@ class Stamp:
         else:
             axis.imshow( self.aperture, cmap=cmap )
 
-        xis.plot( self.x, self.y, color + "x", ms=2 )
+        axis.plot( self.x, self.y, color + "x", ms=2 )
 
         axis.add_artist(
             pyplot.Circle( (self.x, self.y), radius=self.R,
