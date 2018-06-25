@@ -47,12 +47,11 @@ class Stamp:
         self.R          = None      ##  aperture radius
         self.ap_area    = None      ##  aperture area (number of pixels)
         self.th_area    = None      ##  aperture area (circular area)
-        self.data_xy       = None      ##  number of pixels / circular area
 
         self.annulus    = None      ##  annulus array
         self.R_i        = None      ##  inner annulus radius
         self.R_o        = None      ##  outer annulus radius
-        self.area_an    = None      ##  annulus area (number of pixels)
+        self.an_area    = None      ##  annulus area (number of pixels)
 
         self.psf        = None      ##  array of the point spread function
         self.psf_std    = None      ##  standard deviation of the psf
@@ -80,7 +79,7 @@ class Stamp:
         self.mag        = np.nan      ##  magnitude
         self.mag_err    = np.nan      ##  net magnitude error
 
-        self.php        = np.nan      ##  the photon noise
+        self.gain       = np.nan      ##  gain (e-/adu)
         self.sky        = np.nan      ##  derived sky background value
         self.sky_std    = np.nan      ##  sky background standard deviation
         self.sky_skew   = np.nan      ##  skew in the sky histogram
@@ -269,6 +268,8 @@ class Stamp:
 
     def calc_flux( self, subtract=False, psf=False, zero=30.0 ):
 
+        ##  Caclulate the flux through the aperture.
+
         self.flux   = self.frac * np.sum( self.aperture * self.data )
 
         if subtract is True:
@@ -278,14 +279,12 @@ class Stamp:
 
         self.mag    = zero - 2.5 * np.log10( self.flux )
 
-    def calc_errors( self ):
-
-        self.std_err    = self.th_area * self.sky_std**2
-        self.php_err    = self.flux / self.php
-        self.sky_err    = self.ap_area**2 * self.sky_std**2 / self.an_area
+        ##  Error analysis as calculated by calthech:
+        ##      Flux-Uncertainty from Aperture Photometry (2008)
 
         self.flux_err   = np.sqrt(
-            self.std_err**2 + self.sky_err**2
+            (self.flux / self.gain) +
+            self.sky_std**2 * (self.th_area + self.th_area**2 / self.an_area)
         )
 
         self.mag_err    = 1.0857 * self.flux_err / self.flux
