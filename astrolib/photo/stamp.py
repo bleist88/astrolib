@@ -33,8 +33,8 @@ class Stamp:
 
         ##  Data Array Parameters
 
-        self.image      = image     ##  its a fucking image, you dope
-        self.header     = header    ##  that bullshit thing that comes with FITS
+        self.image      = None      ##  its a fucking image, you dope
+        self.header     = None      ##  that bullshit thing that comes with FITS
         self.wcs        = None      ##  world coordinate system of image
 
         self.shape      = None      ##  shape of array [pixels]
@@ -86,6 +86,10 @@ class Stamp:
         ##  Initialize members from provided arguments.
         ##  Convert angle units to pixels.
 
+        self.image      = image
+        self.header     = header
+        self.wcs        = WCS(header)
+
         self.gain       = gain
         self.pix_scale  = pix_scale
         self.S          = to_pixels( S, pix_scale, unit ) + 0.5
@@ -113,10 +117,6 @@ class Stamp:
     ##  Data Manipulation
 
     def set_target( self, alpha=None, delta=None, x=None, y=None ):
-
-        ## Get image data and wcs info.
-
-        self.wcs    = WCS( header )
 
         ##  Retrieve alternate coordinates (alpha, delta) <--> (x, y).
         ##  If alpha and delta are given, calculate x and y.
@@ -185,7 +185,7 @@ class Stamp:
         ##  Use "try:" in order to troubleshoot stamp exceeding the image.
 
         try:
-            self.data[ self.data_xy ]   = image[
+            self.data[ self.data_xy ]   = self.image[
                 self.data_xy[0] + im_x_c - self.x_c,
                 self.data_xy[1] + im_y_c - self.y_c
             ]
