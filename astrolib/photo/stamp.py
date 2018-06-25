@@ -78,11 +78,7 @@ class Stamp:
         self.flux_err   = np.nan      ##  net flux error
         self.mag        = np.nan      ##  magnitude
         self.mag_err    = np.nan      ##  net magnitude error
-
         self.gain       = np.nan      ##  gain (e-/adu)
-        self.sky        = np.nan      ##  derived sky background value
-        self.sky_std    = np.nan      ##  sky background standard deviation
-        self.sky_skew   = np.nan      ##  skew in the sky histogram
 
         self.php_err    = np.nan      ##  random noise error
         self.sky_err    = np.nan      ##  uncertainty in the sky mean
