@@ -29,24 +29,27 @@ def to_pixels( R, pix_scale, unit ):
 
 class Stamp:
 
-    def __init__( self, S, pix_scale, unit="pixels" ):
+    def __init__( self, image, header, gain=1.0, pix_scale=1.0, S=1, unit="pix" ):
 
         ##  Data Array Parameters
 
-        self.shape      = None      ##  shape of array [pixels]
-        self.pix_scale  = None      ##  [unit] / pixel
-        self.unit       = None      ##  angle unit
+        self.image      = image     ##  its a fucking image, you dope
+        self.header     = header    ##  that bullshit thing that comes with FITS
         self.wcs        = None      ##  world coordinate system of image
 
-        self.data       = None      ##  data array
+        self.shape      = None      ##  shape of array [pixels]
+        self.pix_scale  = None      ##  [unit] / pixel
+        self.unit       = None      ##  angle or pixel unit used by user
+
+        self.data       = None      ##  image data array
         self.data_xy    = None      ##  meshgrid (X, Y)
         self.data_r     = None      ##  radial distance array sqrt(X**2 + Y**2)
         self.S          = None      ##  radial width of data array
 
         self.aperture   = None      ##  aperture array
         self.R          = None      ##  aperture radius
-        self.ap_area    = None      ##  aperture area (number of pixels)
-        self.th_area    = None      ##  aperture area (circular area)
+        self.ap_area    = None      ##  true aperture area (number of pixels)
+        self.th_area    = None      ##  theoretical aperture area (pi * R**2)
 
         self.annulus    = None      ##  annulus array
         self.R_i        = None      ##  inner annulus radius
@@ -80,18 +83,17 @@ class Stamp:
         self.mag_err    = np.nan      ##  net magnitude error
         self.gain       = np.nan      ##  gain (e-/adu)
 
-        self.php_err    = np.nan      ##  random noise error
-        self.sky_err    = np.nan      ##  uncertainty in the sky mean
-        self.std_err    = np.nan      ##  random sky fluctuations
+        ##  Initialize members from provided arguments.
+        ##  Convert angle units to pixels.
 
-        ##  Initialize members.
+        self.gain       = gain
+        self.pix_scale  = pix_scale
+        self.S          = to_pixels( S, pix_scale, unit ) + 0.5
+        self.unit       = unit      ##  add 0.5 to account for the center pixel.
 
-        self.S          = to_pixels( S, pix_scale, unit ) + 0.5     ##  maybe?
-        self.unit       = unit      ##  add 0.5 to account for the center pixel
+        ##  Create arrays for the image data, aperture and annulus.
 
         self.shape      = int(2 * self.S), int(2 * self.S)
-        self.pix_scale  = pix_scale
-
         self.x_c        = int( self.shape[0] / 2 )
         self.y_c        = int( self.shape[1] / 2 )
 
@@ -110,7 +112,7 @@ class Stamp:
     ##  ====================================================================  ##
     ##  Data Manipulation
 
-    def set_data( self, image, header, alpha=None, delta=None, x=None, y=None ):
+    def set_target( self, alpha=None, delta=None, x=None, y=None ):
 
         ## Get image data and wcs info.
 
