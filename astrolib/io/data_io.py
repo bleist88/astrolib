@@ -74,7 +74,7 @@ def read( file_name, dtype=None ):
     ## Inform user to lines that were not written.
 
     if bad_lines > 0:
-        print( "%i lines not read in %s." % ( bad_lines, file_name ) )
+        print( "%i lines not read in %s." % (bad_lines, file_name) )
 
     return array
 
@@ -90,9 +90,9 @@ def write(
     formatted header written from the dtype of the array.  The file will contain
     a header which looks like:
 
-        #   col_name_1          int32
-        #   col_name_2          float32
-        #   col_name_3          U27
+        #<   col_name_1          int32
+        #<   col_name_2          float32
+        #<   col_name_3          U27
 
     Parameters:
         file_name   - str
@@ -158,7 +158,18 @@ def write(
 
 ##  ========================================================================  ##
 
-def writeto( out_file, dstring, row_data ):
+def start_file( file_name, array ):
+
+    out_file    = open( file_name, "w" )
+
+    for name in list( array.dtype.names ):
+
+        out_file.write( "#<  " + name )
+        out_file.write( (25-len(name)) * " " )
+        out_file.write( str(array.dtype[name]) )
+        out_file.write( "\n" )
+
+def write_to( out_file, dstring, row_data ):
 
     out_file.write( dstring % tuple(row_data) )
     out_file.write( "\n" )
@@ -176,11 +187,9 @@ def write_configs( file_name, configs, comment=None ):
     out_file    = open( file_name, "w" )
 
     if comment is not None:
-
         out_file.write( "##  " + comment + "\n\n" )
 
     else:
-
         out_file.write( "\n\n" )
 
     ##  Create value strings from values.
@@ -192,7 +201,6 @@ def write_configs( file_name, configs, comment=None ):
             vals  = []
 
             for val in configs[key]:
-
                 vals.append( str(val) )
 
             configs[key]    = ", ".join( vals )
