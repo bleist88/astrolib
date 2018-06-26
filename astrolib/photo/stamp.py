@@ -29,7 +29,8 @@ def to_pixels( R, pix_scale, unit ):
 
 class Stamp:
 
-    def __init__( self, image, header, gain=1.0, pix_scale=1.0, S=1, unit="pix" ):
+    def __init__( self, image, header,
+                        gain=1.0, dzero=0.0, pix_scale=1.0, S=1, unit="pix" ):
 
         ##  Data Array Parameters
 
@@ -91,6 +92,8 @@ class Stamp:
         self.wcs        = WCS(header)
 
         self.gain       = gain
+        self.dzero      = dzero
+
         self.pix_scale  = pix_scale
         self.S          = to_pixels( S, pix_scale, unit ) + 0.5
         self.unit       = unit      ##  add 0.5 to account for the center pixel.
@@ -286,6 +289,7 @@ class Stamp:
         )
 
         self.mag_err    = 1.0857 * self.flux_err / self.flux
+        self.mag_err    = np.sqrt( self.mag_err**2 + dzero**2 )
 
     ##  ====================================================================  ##
     ##  Plotting
