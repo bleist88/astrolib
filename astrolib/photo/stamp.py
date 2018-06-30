@@ -30,13 +30,17 @@ def to_pixels( R, pix_scale, unit ):
 class Stamp:
 
     def __init__( self, image, header,
-                        gain=1.0, dzero=0.0, pix_scale=1.0, S=1, unit="pix" ):
+                    gain=1.0, mag_zero=30.0, dmag_zero=0.0, pix_scale=1.0, S=1, unit="pix" ):
 
         ##  Data Array Parameters
 
         self.image      = None      ##  its a fucking image, you dope
         self.header     = None      ##  that bullshit thing that comes with FITS
         self.wcs        = None      ##  world coordinate system of image
+
+        self.gain       = None      ##  image gain (e-/adu)
+        self.mag_zero   = None      ##  image magnitude zeropoint
+        self.dmag_zero  = None      ##  image uncertainty in the mag_zero
 
         self.shape      = None      ##  shape of array [pixels]
         self.pix_scale  = None      ##  [unit] / pixel
@@ -92,7 +96,8 @@ class Stamp:
         self.wcs        = WCS(header)
 
         self.gain       = gain
-        self.dzero      = dzero
+        self.mag_zero   = mag_zero
+        self.dmag_zero  = dmag_zero
 
         self.pix_scale  = pix_scale
         self.S          = to_pixels( S, pix_scale, unit ) + 0.5
@@ -267,7 +272,7 @@ class Stamp:
             if np.abs( mean0 - self.sky ) / mean0 < epsilon or iters <= 0:
                 break
 
-    def calc_flux( self, subtract=False, psf=False, zero=30.0 ):
+    def calc_flux( self, subtract=False, psf=False ):
 
         ##  Caclulate the flux through the aperture.
 
@@ -278,7 +283,7 @@ class Stamp:
         if psf is True:
             self.flux  *= self.psf_frac
 
-        self.mag    = zero - 2.5 * np.log10( self.flux )
+        self.mag    = self.mag_zero - 2.5 * np.log10( self.flux )
 
         ##  Error analysis as calculated by calthech:
         ##      Flux-Uncertainty from Aperture Photometry (2008)
@@ -289,7 +294,7 @@ class Stamp:
         )
 
         self.mag_err    = 1.0857 * self.flux_err / self.flux
-        self.mag_err    = np.sqrt( self.mag_err**2 + dzero**2 )
+        self.mag_err    = np.sqrt( self.mag_err**2 + self.dmag_zero**2 )
 
     ##  ====================================================================  ##
     ##  Plotting
