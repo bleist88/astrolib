@@ -216,10 +216,25 @@ def get_configs( configs_file ):
 
 def parse_path( full_path ):
     """
-    Returns tuple of ( path, name, ext ).
+    Returns tuple of ( path, name, ext ).  The extension is considered to be
+    anything after the first '.' in the file_name.
     """
 
     path, file_name     = os.path.split( full_path )
-    name, ext           = os.path.splitext( file_name )
+    #name, ext           = os.path.splitext( file_name )   ##  the old way
+
+    i = 0
+    while j is None and i < len(file_name):
+        if file_name[i] == ".":
+            j = i
+        else:
+            i += 1
+
+    if j is not None:
+        name    = file_name[:j]
+        ext     = file_name[j:]
+    else:
+        name    = file_name
+        ext     = ""        
 
     return path, name, ext

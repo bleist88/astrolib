@@ -25,7 +25,7 @@ def to_pixels( R, pix_scale, unit ):
 
     return  R
 
-################################################################################
+##  ============================================================================
 
 class Stamp:
 
@@ -116,7 +116,7 @@ class Stamp:
         self.annulus    = np.zeros( self.shape, dtype="float64" )
         self.psf        = np.zeros( self.shape, dtype="float64" )
 
-    ##  ====================================================================  ##
+    ##  ========================================================================
     ##  Data Manipulation
 
     def set_target( self, alpha=None, delta=None, x=None, y=None ):
