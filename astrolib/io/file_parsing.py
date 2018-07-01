@@ -223,7 +223,8 @@ def parse_path( full_path ):
     path, file_name     = os.path.split( full_path )
     #name, ext           = os.path.splitext( file_name )   ##  the old way
 
-    i = 0
+    i, j    = 0, None
+    
     while j is None and i < len(file_name):
         if file_name[i] == ".":
             j = i
@@ -235,6 +236,6 @@ def parse_path( full_path ):
         ext     = file_name[j:]
     else:
         name    = file_name
-        ext     = ""        
+        ext     = ""
 
     return path, name, ext
