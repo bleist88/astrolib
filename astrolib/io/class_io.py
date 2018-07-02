@@ -7,20 +7,20 @@ from .__imports__ import *
 
 ##  ============================================================================
 
-def save_obj( obj, saveas, clobber=False ):
+def save_obj( obj, saveas, overwrite=False ):
     """
     Writes the instantiation of an object to a python pickle file.
 
     Arguments:
         obj             - the object to be written to file.
         saveas          - file path to save to; if None, uses existing path
-        clobber=False   - if clobber=True, overwrites existing file paths
+        overwrite=False - if overwrite=True, overwrites existing file paths
     """
 
     ##  Don't write over existing file without permission.
 
-    if os.path.isfile( saveas ) and clobber is False:
-        raise   Exception( saveas + " already exists.  Set 'clobber=True'." )
+    if os.path.isfile( saveas ) and overwrite is False:
+        raise   Exception( saveas + " already exists.  Set 'overwrite=True'." )
 
     ##  Write object to file.
 

@@ -65,19 +65,19 @@ class Master:
 ##  ========================================================================
     ##  File Management
 
-    def save( self, saveas=None, clobber=False ):
+    def save( self, saveas=None, overwrite=False ):
         """
         Saves the object to a python pickle file.
 
         Arguments:
             saveas=None     - file path to save to; if None, uses existing path
-            clobber=False   - if clobber=True, overwrites existing file paths
+            overwrite=False - if overwrite=True, overwrites existing file paths
         """
 
         if saveas is None:
             saveas  = self.file_name
 
-        io.save_obj( self, saveas, clobber=clobber )
+        io.save_obj( self, saveas, overwrite=overwrite )
 
     def open( self, file_name, force=False ):
         """
@@ -108,7 +108,7 @@ class Master:
         else:
             io.write( file_name, self.catalogs[cat_name] )
 
-    def write_fits( self, file_name, clobber=False ):
+    def write_fits( self, file_name, overwrite=False ):
         """
         Write the MCC to a FITS cube.  The zeroth extension is an empty array
         and the miscellaneous member information is written to the header.  The
@@ -119,7 +119,7 @@ class Master:
 
         Arguments:
             file_name       - file path to write to
-            clobber=False   - if True, overwrites existing file path
+            overwrite=False - if True, overwrites existing file path
         """
 
         ##  Initialize the FITS object.
@@ -156,7 +156,7 @@ class Master:
 
         ##  Write to a FITS file.
 
-        hdu_list.writeto( file_name, clobber=clobber )
+        hdu_list.writeto( file_name, overwrite=overwrite )
 
     ##  ========================================================================
     ##  Additions and Correlation
@@ -274,7 +274,7 @@ class Master:
 
         ##  Save.
 
-        self.save( clobber=True )
+        self.save( overwrite=True )
 
     def find_neighbors( self ):
         """
@@ -350,7 +350,7 @@ class Master:
 
         self.append( cat_name, new_cat, Rc=Rc )
         self.update()
-        self.save( clobber=True )
+        self.save( overwrite=True )
 
     ##  ========================================================================
     ##  This routine is currently down.  I have this written with images as
