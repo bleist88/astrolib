@@ -8,12 +8,13 @@ from .__imports__   import *
 
 class Image_Manager:
 
-    def __init__( self, filter, telescope=None, instrument=None, author=None ):
+    def __init__( self, file_name, t=None, i=None, f=None, a=None, init=False ):
 
-        self.filter     = filter
-        self.telescope  = telescope
-        self.instrument = instrument
-        self.author     = author
+        self.file_name  = file_name
+        self.filter     = f
+        self.telescope  = t
+        self.instrument = i
+        self.author     = a
 
         self.tiled      = False         ##  are there more than 1 tiles?
         self.files      = {             ##  paths to files
@@ -57,6 +58,9 @@ class Image_Manager:
 
         self.comments   = []           ##  comments / history
         self.history    = []
+
+        if init is True:
+            self.open( file_name )
 
     ##  ========================================================================
 
