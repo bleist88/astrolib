@@ -55,7 +55,7 @@ class Image_Manager:
         self.time       = None
         self.julian     = None
 
-        self.comments   = []            ##  comments / history
+        self.comments   = []           ##  comments / history
         self.history    = []
 
     ##  ========================================================================
