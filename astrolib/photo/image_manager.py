@@ -59,7 +59,7 @@ class Image_Manager:
         self.comments   = []           ##  comments / history
         self.history    = []
 
-        if init is True:
+        if init is False:
             self.open( file_name )
 
     ##  ========================================================================
