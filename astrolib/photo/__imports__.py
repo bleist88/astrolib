@@ -9,6 +9,7 @@ import  time
 import  copy
 import  pickle
 import  gzip
+import  pyarrow
 
 import  numpy as np
 import  scipy as sp
