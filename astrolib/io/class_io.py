@@ -24,7 +24,7 @@ def save_obj( obj, saveas, overwrite=False ):
 
     ##  Write object to file.
 
-    pickle.dump( obj, gzip.open(saveas, "wb") )
+    pickle.dump( obj, gzip.open(saveas, "wb"), protocol=4 )
 
 ##  ============================================================================
 
