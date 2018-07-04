@@ -6,7 +6,86 @@ from .__imports__   import *
 
 ##  ============================================================================
 
-class Image_Manager:
+class image:
+
+    def __init__( self, file_name, init=False ):
+
+        self.file_name  = file_name     ##  file name (.im extension)
+        self.filter     = None          ##  filter
+        self.telescope  = None          ##  telescope
+        self.instrument = None          ##  instrument
+        self.author     = None          ##  author
+
+        self.data       = None          ##  image array (tuple if multi==True)
+        self.header     = None          ##  header dict (tuple if multi==True)
+        self.multi      = False         ##  does it consist of mult. images?
+        self.type       = None          ##  image type
+
+        self.pix_scale  = None          ##  pixel scale
+        self.seeing     = None          ##  seeing resolution
+
+        self.exp_time   = None          ##  exposure time [s]
+        self.gain       = None          ##  gain [e-/adu]
+        self.unit       = None          ##  unit of data array
+        self.mag_zero   = None          ##  magnitude zeropoint (AB)
+        self.dmag_zero  = None          ##  magnitude zeropoint error
+
+        self.wcs        = None          ##  astropy.wcs.WCS object
+        self.shape      = None          ##  array shape
+        self.x_c        = None          ##  center pixel x
+        self.y_c        = None          ##  center pixel y
+        self.alpha_c    = None          ##  center pixel ra
+        self.delta_c    = None          ##  center pixel dec
+        self.theta      = None          ##  orientation in radians
+
+        self.date       = None          ##  date [day-month-year]
+        self.time       = None          ##  time [hour:min:sec]
+        self.julian     = None          ##  julian time
+
+        self.comments   = []            ##  comments / history
+        self.history    = []
+
+        if init is False:
+            self.open( file_name )
+
+    def save( self, saveas=None, overwrite=False ):
+        """
+        Saves the object to a python pickle file.
+
+        Arguments:
+            saveas=None     - file path to save to; if None, uses existing path
+            overwrite=False - if overwrite=True, overwrites existing file paths
+        """
+
+        ##  Write all members to a dictionary.
+
+        members = {}
+
+        for key in self.__dict__:
+            members[ key ]  = self.__dict__[ key ]
+
+        members["wcs"]  = None      ##  this can't be serialized :(
+
+        ##  Serialize to a file.
+
+        if saveas in os.listdir():
+            if overwrite is True:
+                pyarrow.serialize_to( members, saveas )
+            else:
+                raise   Exception("%s already exists." % saveas )
+        else:
+            pyarrow.serialize_to( members, saveas )
+
+    def open( self, file_name ):
+
+        members = pyarrow.read_serialized( file_name ).deserialize()
+
+        for key in members:
+            self.__dict__[ key ]    = members[ key ]
+
+##  ============================================================================
+
+class image_manager:
 
     def __init__( self, file_name, t=None, i=None, f=None, a=None, init=False ):
 

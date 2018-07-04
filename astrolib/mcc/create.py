@@ -21,10 +21,10 @@ def create( mcc_file, configs_file, path="." ):
     ##  Initialize the master catalog object.
 
     if os.path.isfile( mcc_file ):
-        FM  = mcc.Field_Manager( mcc_file )
+        FM  = mcc.master( mcc_file )
 
     else:
-        FM  = mcc.Field_Manager( mcc_file, init=True )
+        FM  = mcc.master( mcc_file, init=True )
 
     ## Loop through all catalog configurations and add them to the Cube.
 

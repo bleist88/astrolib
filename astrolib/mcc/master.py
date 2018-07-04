@@ -20,7 +20,7 @@ master_dtype    = {
 
 ##  ============================================================================
 
-class Master:
+class master:
 
     def __init__( self, file_name, init=False ):
 

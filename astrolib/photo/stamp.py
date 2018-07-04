@@ -27,7 +27,7 @@ def to_pixels( R, pix_scale, unit ):
 
 ##  ============================================================================
 
-class Stamp:
+class stamp:
 
     def __init__( self, image, header,
                     gain=1.0, mag_zero=30.0, dmag_zero=0.0, pix_scale=1.0, S=1, unit="pix" ):

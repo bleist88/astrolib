@@ -113,8 +113,8 @@ Flags:
 
 ##  Using MCC in a Python Shell
 
-The main actor in the MCC package is the class `Master`.  The class `Master`
-defines the Master Catalog Object.  An instantiation of the class has the
+The main actor in the MCC package is the class `master`.  The class `master`
+defines the master Catalog Object.  An instantiation of the class has the
 following members:
 
 *   *file_name*     - the file name for which the object is written to and
@@ -128,7 +128,7 @@ following members:
 *   *Rc*            - a dictionary of the correlation radii used for each input
     catalog
 
-The `Master` class contains the following methods, the description of each is
+The `master` class contains the following methods, the description of each is
 described by the docstring:
 
 *   save( saveas=None, clobber=False )
@@ -149,7 +149,7 @@ In [1]: import MCC, Io
 
 ##  instantiate a master catalog object from an existing .mcc file
 
-In [2]: MC = MCC.Master( "Test.mcc" )
+In [2]: MC = MCC.master( "Test.mcc" )
 
 ##  print some of the members
 

@@ -27,7 +27,7 @@ def to_pixels( R, scale, units ):
 
 ##  ############################################################################
 
-class Stamp:
+class stamp:
 
     def __init__( self, radius, scale, units="pixels" ):
 
