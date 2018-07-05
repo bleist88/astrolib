@@ -66,7 +66,7 @@ class image:
         if saveas is None:
             saveas = self.file_name
 
-        if os.path.is_file( saveas ) and overwrite is False:
+        if os.path.isfile( saveas ) and overwrite is False:
             raise   Exception( "%s already exists." % saveas )
 
         ##  Write all members to a dictionary.
