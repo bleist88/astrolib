@@ -80,7 +80,7 @@ class image:
                 continue
 
             keys.append( key )
-            values.append( self.__dict__key )
+            values.append( self.__dict__[key] )
 
         members = [ keys, values ]
 
