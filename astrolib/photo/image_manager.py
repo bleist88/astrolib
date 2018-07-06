@@ -90,7 +90,7 @@ class image:
 
     def open( self, file_name ):
 
-        members = pyarrow.read_serialized( file_name ).deserialize
+        members = pyarrow.read_serialized( file_name ).deserialize()
         keys    = members[0]
         values  = members[1]
 
