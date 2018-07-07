@@ -71,34 +71,36 @@ class image:
 
         ##  Write all members to a dictionary.
 
-        keys    = []
-        values  = []
+        members     = {}
 
         for key in self.__dict__:
+            members[ key ]  = self.__dict__[ key ]
 
-            if key == "wcs":    ##  wcs objects can't be serialized
-                continue
+        ##  Special Conditions:
+        ##  1.  wcs can't be serialized
+        ##  2.  header must be stored as a string
 
-            keys.append( key )
-            values.append( self.__dict__[key] )
-
-        members = [ keys, values ]
+        members["wcs"]      = None
+        members["header"]   = str( members["header"] )
 
         ##  Serialize to a file.
 
-        pyarrow.serialize_to( members, saveas )
+        np.savez( saveas, **members )
+        os.rename( saveas + ".npz", saveas )
 
     def open( self, file_name ):
 
-        members = pyarrow.read_serialized( file_name ).deserialize()
-        keys    = members[0]
-        values  = members[1]
+        members = np.load( file_name )
 
-        for k, key in enumerate( keys ):
+        for key in members:
+            self.__dict__[ key ]    = members[ key ]
 
-            self.__dict__[ key ]    = values[ k ]
+        ##  Special Conditions:
+        ##  1.  wcs can't be serialized
+        ##  2.  header must be stored as a string
 
         try:
             self.wcs    = WCS( self.header )
         except:
+            print("Couldn't create image.wcs from header.")
             self.wcs    = None
