@@ -99,6 +99,8 @@ class image:
         ##  1.  wcs can't be serialized
         ##  2.  header must be stored as a string
 
+        self.header     = str(self.header)
+
         try:
             self.wcs    = WCS( self.header )
         except:
