@@ -15,12 +15,12 @@
 /anaconda3/lib/python3.6/site-packages/astrolib/mcc/__imports__.py
 /anaconda3/lib/python3.6/site-packages/astrolib/mcc/correlation.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/fits.py
-/anaconda3/lib/python3.6/site-packages/astrolib/photo/image_manager.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/sex.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/stamp_old.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__init__.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/stamp.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__imports__.py
+/anaconda3/lib/python3.6/site-packages/astrolib/photo/image.py
 /anaconda3/lib/python3.6/site-packages/astrolib/io/__pycache__/file_parsing.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/io/__pycache__/data_io.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/io/__pycache__/catter.cpython-36.pyc
@@ -38,12 +38,12 @@
 /anaconda3/lib/python3.6/site-packages/astrolib/mcc/__pycache__/__imports__.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/mcc/__pycache__/correlation.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/fits.cpython-36.pyc
-/anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/image_manager.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/sex.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/stamp_old.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/__init__.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/stamp.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/__imports__.cpython-36.pyc
+/anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/image.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib-6.283-py3.6.egg-info/PKG-INFO
 /anaconda3/lib/python3.6/site-packages/astrolib-6.283-py3.6.egg-info/zip-safe
 /anaconda3/lib/python3.6/site-packages/astrolib-6.283-py3.6.egg-info/SOURCES.txt

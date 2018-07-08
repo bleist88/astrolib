@@ -1,7 +1,7 @@
 
 from .__imports__ import *
 
-################################################################################
+##  ============================================================================
 
 arc_units   = [
     "second", "sec", "seconds", "secs",
@@ -29,27 +29,24 @@ def to_pixels( R, pix_scale, unit ):
 
 class stamp:
 
-    def __init__( self, image, header,
-                    gain=1.0, mag_zero=30.0, dmag_zero=0.0, pix_scale=1.0, S=1, unit="pix" ):
+    def __init__( self, image_file, S=10, **params ):
 
         ##  Data Array Parameters
 
-        self.image      = None      ##  its a fucking image, you dope
-        self.header     = None      ##  that bullshit thing that comes with FITS
-        self.wcs        = None      ##  world coordinate system of image
+        self.image      = None      ##  photo.image object
 
-        self.gain       = None      ##  image gain (e-/adu)
-        self.mag_zero   = None      ##  image magnitude zeropoint
-        self.dmag_zero  = None      ##  image uncertainty in the mag_zero
+        self.gain       = None      ##  image gain [e-/adu]
+        self.exp_time   = None      ##  exposure time [s]
+        self.mag_0      = None      ##  image magnitude zeropoint
+        self.mag_0_err  = None      ##  image uncertainty in the mag_0
+        self.pix_scale  = None      ##  [unit] / pixel
 
         self.shape      = None      ##  shape of array [pixels]
-        self.pix_scale  = None      ##  [unit] / pixel
-        self.unit       = None      ##  angle or pixel unit used by user
-
         self.data       = None      ##  image data array
         self.data_xy    = None      ##  meshgrid (X, Y)
         self.data_r     = None      ##  radial distance array sqrt(X**2 + Y**2)
-        self.S          = None      ##  radial width of data array
+        self.S          = S         ##  radial width of data array
+        self.unit       = None      ##  angle or pixel unit used by user
 
         self.aperture   = None      ##  aperture array
         self.R          = None      ##  aperture radius
@@ -82,28 +79,40 @@ class stamp:
 
         ##  Photometry Parameters
 
-        self.flux       = np.nan      ##  flux through aperture
-        self.flux_err   = np.nan      ##  net flux error
-        self.mag        = np.nan      ##  magnitude
-        self.mag_err    = np.nan      ##  net magnitude error
-        self.gain       = np.nan      ##  gain (e-/adu)
+        self.flux       = np.nan    ##  flux through aperture
+        self.flux_err   = np.nan    ##  net flux error
+        self.mag        = np.nan    ##  magnitude
+        self.mag_err    = np.nan    ##  net magnitude error
+        self.gain       = np.nan    ##  gain (e-/adu)
 
-        ##  Initialize members from provided arguments.
-        ##  Convert angle units to pixels.
+        ##  ====================================================================\
+        ##  Instantiation
 
-        self.image      = image
-        self.header     = header
-        self.wcs        = WCS(header)
+        ##  Initialize from photo.image file.
 
-        self.gain       = gain
-        self.mag_zero   = mag_zero
-        self.dmag_zero  = dmag_zero
+        self.image  = photo.image( image_file )
 
-        self.pix_scale  = pix_scale
-        self.S          = to_pixels( S, pix_scale, unit ) + 0.5
-        self.unit       = unit      ##  add 0.5 to account for the center pixel.
+        ##  Get parameters from the image object.
 
-        ##  Create arrays for the image data, aperture and annulus.
+        members     = "gain", "exp_time", "mag_0", "mag_0_err", "pix_scale"
+
+        for member in members:
+            self.__dict__[ key ]    = self.image.__dict__[ key ]
+
+        ##  Get kwargs from **params.
+
+        for key in params:
+            if key in self.__dict__:
+                self.__dict__[key]  = params[key]
+
+        ##  Deal with units.
+
+        if unit not in pix_units:
+            self.S  = to_pixels( S, pix_scale, unit ) + 0.5     ##  force odd
+        else:
+            self.S  = int( S )
+
+        ##  Create the arrays for the image data, aperture, annulus and psf.
 
         self.shape      = int(2 * self.S), int(2 * self.S)
         self.x_c        = int( self.shape[0] / 2 )
@@ -133,8 +142,8 @@ class stamp:
         if alpha is not None and delta is not None:
 
             position    = np.array([[ alpha, delta ]])
-            im_x        = self.wcs.wcs_world2pix( position, 1 )[0][1]
-            im_y        = self.wcs.wcs_world2pix( position, 1 )[0][0]
+            im_x        = image.wcs.wcs_world2pix( position, 1 )[0][1]
+            im_y        = image.wcs.wcs_world2pix( position, 1 )[0][0]
             im_x_c      = int( im_x )
             im_y_c      = int( im_y )
 
@@ -153,8 +162,8 @@ class stamp:
             im_x_c      = int( im_x )
             im_y_c      = int( im_y )
 
-            self.alpha  = self.wcs.wcs_pix2world( position, 1 )[0][0]
-            self.delta  = self.wcs.wcs_pix2world( position, 1 )[0][1]
+            self.alpha  = image.wcs.wcs_pix2world( position, 1 )[0][0]
+            self.delta  = image.wcs.wcs_pix2world( position, 1 )[0][1]
             self.x_off  = im_x - ( im_x_c + 0.5 )
             self.y_off  = im_y - ( im_y_c + 0.5 )
             self.x      = self.x_c + self.x_off
@@ -178,7 +187,7 @@ class stamp:
             [ im_x_c - 1,   im_y_c      ]
         ])
 
-        positions   = self.wcs.wcs_pix2world( around, 1 )
+        positions   = image.wcs.wcs_pix2world( around, 1 )
 
         if (positions[1][1] - positions[3][1]) > 0:
             k  = 3
@@ -193,7 +202,7 @@ class stamp:
         ##  Use "try:" in order to troubleshoot stamp exceeding the image.
 
         try:
-            self.data[ self.data_xy ]   = self.image[
+            self.data[ self.data_xy ]   = image.data[
                 self.data_xy[0] + im_x_c - self.x_c,
                 self.data_xy[1] + im_y_c - self.y_c
             ]
@@ -208,7 +217,7 @@ class stamp:
             (self.data_xy[0] - self.x)**2 + (self.data_xy[1] - self.y)**2
         )
 
-    ##  ====================================================================  ##
+    ##  ========================================================================
     ##  Aperture Manipulation
 
     def set_aperture( self, R ):
@@ -283,7 +292,7 @@ class stamp:
         if psf is True:
             self.flux  *= self.psf_frac
 
-        self.mag    = self.mag_zero - 2.5 * np.log10( self.flux )
+        self.mag    = self.mag_0 - 2.5 * np.log10( self.flux )
 
         ##  Error analysis as calculated by calthech:
         ##      Flux-Uncertainty from Aperture Photometry (2008)
@@ -294,9 +303,9 @@ class stamp:
         )
 
         self.mag_err    = 1.0857 * self.flux_err / self.flux
-        self.mag_err    = np.sqrt( self.mag_err**2 + self.dmag_zero**2 )
+        self.mag_err    = np.sqrt( self.mag_err**2 + self.mag_0_err**2 )
 
-    ##  ====================================================================  ##
+    ##  ========================================================================
     ##  Plotting
 
     def plot_stamp( self, axis, sigma=3, epsilon=0.03, cmap="gray", color="r" ):
