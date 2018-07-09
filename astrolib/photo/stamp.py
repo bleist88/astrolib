@@ -98,7 +98,7 @@ class stamp:
         ##  Get kwargs from **params.
 
         for key in params:
-            if param in self.__dict__:
+            if key in self.__dict__:
                 self.__dict__[ key ]  = params[ key ]
 
         ##  Deal with units.
