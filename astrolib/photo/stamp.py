@@ -29,11 +29,11 @@ def to_pixels( R, pix_scale, unit ):
 
 class stamp:
 
-    def __init__( self, image_file, S=10, **params ):
+    def __init__( self, image, S=10, **params ):
 
         ##  Data Array Parameters
 
-        self.image      = None      ##  photo.image object
+        self.image      = image     ##  photo.image object
 
         self.gain       = None      ##  image gain [e-/adu]
         self.exp_time   = None      ##  exposure time [s]
@@ -85,25 +85,21 @@ class stamp:
         self.mag_err    = np.nan    ##  net magnitude error
         self.gain       = np.nan    ##  gain (e-/adu)
 
-        ##  ====================================================================\
+        ##  ====================================================================
         ##  Instantiation
-
-        ##  Initialize from photo.image file.
-
-        self.image  = photo.image( image_file )
 
         ##  Get parameters from the image object.
 
-        members     = "gain", "exp_time", "mag_0", "mag_0_err", "pix_scale"
+        shared_members  = "gain", "exp_time", "mag_0", "mag_0_err", "pix_scale"
 
-        for member in members:
-            self.__dict__[ key ]    = self.image.__dict__[ key ]
+        for key in shared_members:
+            self.__dict__[ key ]    = image.__dict__[ key ]
 
         ##  Get kwargs from **params.
 
         for key in params:
-            if key in self.__dict__:
-                self.__dict__[key]  = params[key]
+            if param in self.__dict__:
+                self.__dict__[ key ]  = params[ key ]
 
         ##  Deal with units.
 
@@ -114,7 +110,7 @@ class stamp:
 
         ##  Create the arrays for the image data, aperture, annulus and psf.
 
-        self.shape      = int(2 * self.S), int(2 * self.S)
+        self.shape      = int( 2 * self.S ), int( 2 * self.S )
         self.x_c        = int( self.shape[0] / 2 )
         self.y_c        = int( self.shape[1] / 2 )
 
