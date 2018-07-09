@@ -183,7 +183,7 @@ class stamp:
             [ im_x_c - 1,   im_y_c      ]
         ])
 
-        positions   = image.wcs.wcs_pix2world( around, 1 )
+        positions   = self.image.wcs.wcs_pix2world( around, 1 )
 
         if (positions[1][1] - positions[3][1]) > 0:
             k  = 3
@@ -198,7 +198,7 @@ class stamp:
         ##  Use "try:" in order to troubleshoot stamp exceeding the image.
 
         try:
-            self.data[ self.data_xy ]   = image.data[
+            self.data[ self.data_xy ]   = self.image.data[
                 self.data_xy[0] + im_x_c - self.x_c,
                 self.data_xy[1] + im_y_c - self.y_c
             ]
