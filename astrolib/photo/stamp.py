@@ -104,7 +104,7 @@ class stamp:
         ##  Deal with units.
 
         if self.unit not in pix_units:
-            self.S  = to_pixels( S, pix_scale, self.unit ) + 0.5
+            self.S  = to_pixels( S, self.pix_scale, self.unit ) + 0.5
         else:
             self.S  = int( S )
 
