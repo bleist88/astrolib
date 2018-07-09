@@ -103,10 +103,7 @@ class stamp:
 
         ##  Deal with units.
 
-        if self.unit not in pix_units:
-            self.S  = to_pixels( S, self.pix_scale, self.unit ) + 0.5
-        else:
-            self.S  = int( S )
+        self.S  = to_pixels( S, self.pix_scale, self.unit ) + 0.5
 
         ##  Create the arrays for the image data, aperture, annulus and psf.
 

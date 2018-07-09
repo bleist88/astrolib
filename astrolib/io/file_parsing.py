@@ -239,5 +239,5 @@ def parse_path( full_path ):
     # else:
     #     name    = file_name
     #     ext     = ""
-    #
-    # return path, name, ext
+
+    return path, name, ext
