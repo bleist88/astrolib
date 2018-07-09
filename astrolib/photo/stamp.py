@@ -138,8 +138,8 @@ class stamp:
         if alpha is not None and delta is not None:
 
             position    = np.array([[ alpha, delta ]])
-            im_x        = image.wcs.wcs_world2pix( position, 1 )[0][1]
-            im_y        = image.wcs.wcs_world2pix( position, 1 )[0][0]
+            im_x        = self.image.wcs.wcs_world2pix( position, 1 )[0][1]
+            im_y        = self.image.wcs.wcs_world2pix( position, 1 )[0][0]
             im_x_c      = int( im_x )
             im_y_c      = int( im_y )
 
@@ -158,8 +158,8 @@ class stamp:
             im_x_c      = int( im_x )
             im_y_c      = int( im_y )
 
-            self.alpha  = image.wcs.wcs_pix2world( position, 1 )[0][0]
-            self.delta  = image.wcs.wcs_pix2world( position, 1 )[0][1]
+            self.alpha  = self.image.wcs.wcs_pix2world( position, 1 )[0][0]
+            self.delta  = self.image.wcs.wcs_pix2world( position, 1 )[0][1]
             self.x_off  = im_x - ( im_x_c + 0.5 )
             self.y_off  = im_y - ( im_y_c + 0.5 )
             self.x      = self.x_c + self.x_off
