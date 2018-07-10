@@ -16,6 +16,6 @@ setup(
     ],
     scripts             = [
         "astrolib/scripts/mcc", "astrolib/scripts/pysex",
-        "astrolib/scrips/apertures"
+        "astrolib/scripts/apertures"
     ],
 )
