@@ -321,7 +321,7 @@ class stamp:
                 )
             )
 
-        if self.Ri_ and self.R_o
+        if self.R_i is not None and self.R_o is not None:
             axis.add_artist(
                 pyplot.Circle( (self.x, self.y), radius=self.R_i,
                                color=color, linestyle="--", lw=2, fill=False
