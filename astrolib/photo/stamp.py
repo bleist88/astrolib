@@ -83,6 +83,8 @@ class stamp:
         self.flux_err   = np.nan    ##  net flux error
         self.mag        = np.nan    ##  magnitude
         self.mag_err    = np.nan    ##  net magnitude error
+        self.sky        = np.nan    ##  mean sky estimation
+        self.sky_std    = np.nan    ##  deviation in sky value
         self.gain       = np.nan    ##  gain (e-/adu)
 
         ##  ====================================================================
