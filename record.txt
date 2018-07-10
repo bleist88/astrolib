@@ -16,7 +16,6 @@
 /anaconda3/lib/python3.6/site-packages/astrolib/mcc/correlation.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/fits.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/sex.py
-/anaconda3/lib/python3.6/site-packages/astrolib/photo/stamp_old.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__init__.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/stamp.py
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__imports__.py
@@ -39,7 +38,6 @@
 /anaconda3/lib/python3.6/site-packages/astrolib/mcc/__pycache__/correlation.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/fits.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/sex.cpython-36.pyc
-/anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/stamp_old.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/__init__.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/stamp.cpython-36.pyc
 /anaconda3/lib/python3.6/site-packages/astrolib/photo/__pycache__/__imports__.cpython-36.pyc

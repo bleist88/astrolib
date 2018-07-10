@@ -314,23 +314,24 @@ class stamp:
 
         axis.plot( self.x, self.y, color + "x", ms=2 )
 
-        axis.add_artist(
-            pyplot.Circle( (self.x, self.y), radius=self.R,
-                           color=color, lw=2, fill=False
+        if self.R is not None:
+            axis.add_artist(
+                pyplot.Circle( (self.x, self.y), radius=self.R,
+                               color=color, lw=2, fill=False
+                )
             )
-        )
 
-        axis.add_artist(
-            pyplot.Circle( (self.x, self.y), radius=self.R_i,
-                           color=color, linestyle="--", lw=2, fill=False
+        if self.Ri_ and self.R_o
+            axis.add_artist(
+                pyplot.Circle( (self.x, self.y), radius=self.R_i,
+                               color=color, linestyle="--", lw=2, fill=False
+                )
             )
-        )
-
-        axis.add_artist(
-            pyplot.Circle( (self.x, self.y), radius=self.R_o,
-                           color=color, linestyle="--", lw=2, fill=False
+            axis.add_artist(
+                pyplot.Circle( (self.x, self.y), radius=self.R_o,
+                               color=color, linestyle="--", lw=2, fill=False
+                )
             )
-        )
 
     def plot_aperture( self, axis, annulus=True, cmap="gray", color="r" ):
 
