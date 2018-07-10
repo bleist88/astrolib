@@ -1,23 +1,24 @@
 
 package:
-  name:     astrolib
-  version:  "6.283"
+    name:     astrolib
+    version:  "6.283"
 
 source:
-  git_url:  https://github.com/bleist88/astrolib.git
+    git_url:  https://github.com/bleist88/astrolib.git
 
 requirements:
-  build:
-    - python
-    - setuptools
-  run:
-    - python
-    - numpy
-    - scipy
-    - astropy
-    - matplotlib
+    build:
+        - python
+        - setuptools
+    run:
+        - python
+        - numpy
+        - scipy
+        - astropy
+        - matplotlib
+        - pyarrow
 
 about:
-  home:         https://github.com/bleist88/
-  license:      GNU GPLv3
-  license_file: LICENSE
+    home:         https://github.com/bleist88/
+    license:      GNU GPLv3
+    license_file: LICENSE

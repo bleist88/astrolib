@@ -3,7 +3,7 @@ A library of astronomy related packages.
 """
 
 __all__     = [
-    "io", "mcc", "photometry"
+    "io", "mcc", "photo"
 ]
 
 from . import io
