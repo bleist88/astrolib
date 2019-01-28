@@ -19,7 +19,8 @@ setup(
         "astrolib/maths",
     ],
     scripts             = [
-        "astrolib/scripts/mcc", "astrolib/scripts/pysex",
+        "astrolib/scripts/mcc",
+        "astrolib/scripts/pysex",
         "astrolib/scripts/apertures"
     ],
 )

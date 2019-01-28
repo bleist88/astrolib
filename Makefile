@@ -1,19 +1,19 @@
 
-package		= astrolib
+package_name	= astrolib
 
+##	============================================================================
 ##	Installation.
 
-install:  setup conda_build conda_install
+install:  setup conda_install
 
 setup:
 	python3 setup.py install --single-version-externally-managed --record=record.txt
 
-conda_build:
-	conda_build .
-
 conda_install:
-	conda install --use-local astrolib
+	conda_build .;
+	conda install --use-local astrolib;
 
+##	============================================================================
 ##	Updating.
 
 update_all:
@@ -26,8 +26,9 @@ update_git:
 	git push;
 
 update_conda:
-	conda update --use-local ${package};
+	conda update --use-local ${package_name};
 
+##	============================================================================
 ##	Housekeeping.
 
 clean:
