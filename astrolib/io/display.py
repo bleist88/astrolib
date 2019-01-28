@@ -2,12 +2,7 @@
 This module contains functions for displaying progress and timing of operations.
 """
 
-from    __future__  import absolute_import
-from    __future__  import division
-from    __future__  import print_function
-from    __future__  import unicode_literals
-
-from   .__imports__ import *
+from ._imports import *
 
 ##  ========================================================================  ##
 
@@ -32,7 +27,7 @@ def progress( i, length, step=1, alert=None, tabs=0 ):
         ## Print progress bar and display percentage.
 
         complete    = i / length
-        bar         = int( 20 * complete ) * "=" + ">"
+        bar         = int( 19 * complete ) * "=" + ">"
         space       = ( 20 - len(bar) ) * " "
         line        = "[" + bar + space + "]   {:.1%}".format( complete )
 
@@ -41,14 +36,14 @@ def progress( i, length, step=1, alert=None, tabs=0 ):
 
 ##  ========================================================================  ##
 
-class Timer:
+class timer:
     """
-    The Timer class consists of a dictionary of timers.  Timer initializes the
+    The timer class consists of a dictionary of timers.  Timer initializes the
     dictionary with the key "net" which starts a time.clock().  Intermediate
     processes may be timed by adding an element to the dictionary with the
-    methods <Timer>.start( "process_name" ) and <Timer>.end( "process_name" )
+    methods <timer>.start( "process_name" ) and <Timer>.end( "process_name" )
     upon which the time from start to end is printed to the terminal.  The net
-    time of <Timer> is printed upon the call <Timer>.close().
+    time of <timer> is printed upon the call <timer>.close().
     """
 
     def __init__( self, alert=None ):
@@ -95,4 +90,4 @@ class Timer:
         Dt = ( time.clock() - self.timers[ "net" ] ) / 60
 
         print( "Net Time: %.2f minutes." % Dt + end )
-sys.stdout.flush()
+        sys.stdout.flush()

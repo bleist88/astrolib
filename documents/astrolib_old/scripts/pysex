@@ -1,0 +1,72 @@
+#!/anaconda3/bin/python3
+"""
+Script to run PySEx functions.
+"""
+
+from astrolib import io, mcc, photometry
+
+print("Sorry, this script is currently not updated.")
+
+################################################################################
+
+##  Create the main argument parser.
+
+# cl_parser   = io.CL_Parser()
+#
+# cl_parser.add_argument(
+#     name            = "image",
+#     default         = False,
+#     dtype           = str,
+#     flag            = "-i",
+#     required        = True,
+#     description     = "image/batch to Sextract"
+# )
+#
+# cl_parser.add_argument(
+#     name            = "detection",
+#     default         = None,
+#     dtype           = str,
+#     flag            = "-d",
+#     required        = False,
+#     description     = "detection image"
+# )
+#
+# cl_parser.add_argument(
+#     name            = "sex",
+#     default         = False,
+#     dtype           = str,
+#     flag            = "-c",
+#     required        = True,
+#     description     = ".sex file"
+# )
+#
+# cl_parser.add_argument(
+#     name            = "specs",
+#     default         = False,
+#     dtype           = str,
+#     flag            = "-s",
+#     required        = True,
+#     description     = ".specs file"
+# )
+#
+# cl_parser.parse( sys.argv )
+#
+# ################################################################################
+#
+# ##  For now, let's just ignore the option just to run SExtractor.
+# ##  It's only interesting in batch mode, now.
+#
+# if cl_parser.get("sex") and cl_parser.get("specs"):
+#
+#     Instrument  = cl_parser.get("image")
+#     Detection   = cl_parser.get("detection")
+#     specs_file  = cl_parser.get("specs")
+#     sex_file    = cl_parser.get("sex")
+#
+#     photometry.batch_sex(
+#         Instrument, specs_file, sex_file, detection=Detection, command="sex"
+#     )
+#
+# else:
+#
+#     print("Sorry :/")

@@ -2,7 +2,7 @@
 This file houses the image manager.
 """
 
-from .__imports__   import *
+from ._imports import *
 
 ##  ============================================================================
 

@@ -7,16 +7,11 @@ or through a command, i.e...
     script do
 """
 
-from    __future__      import absolute_import
-from    __future__      import division
-from    __future__      import print_function
-from    __future__      import unicode_literals
-
-from    .__imports__    import *
+from ._imports import *
 
 ##  ========================================================================  ##
 
-class CL_Parser:
+class cl_parser:
 
     def __init__( self, cl_args ):
 

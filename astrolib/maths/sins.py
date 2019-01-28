@@ -1,6 +1,5 @@
-##  sins.py
 
-from __imports__ import *
+from astrolib.imports import *
 
 ##  variables
 

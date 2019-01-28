@@ -3,7 +3,7 @@
 Script to run PySEx functions.
 """
 
-from astrolib import io, mcc, photometry
+from astrolib.imports import *
 
 print("Sorry, this script is currently not updated.")
 

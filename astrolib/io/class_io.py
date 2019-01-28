@@ -3,7 +3,7 @@ This file contains functions which help to save and open class objects to and
 from file.
 """
 
-from .__imports__ import *
+from ._imports import *
 
 ##  ============================================================================
 

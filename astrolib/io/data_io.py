@@ -14,12 +14,7 @@ like:
     3       3.13159         2.71828         Beethoven
 """
 
-from    __future__      import absolute_import
-from    __future__      import division
-from    __future__      import print_function
-from    __future__      import unicode_literals
-
-from    .__imports__    import *
+from ._imports import *
 
 ##  ========================================================================  ##
 
@@ -216,7 +211,7 @@ def write_configs( file_name, configs, comment=None ):
 
 ##  ========================================================================  ##
 
-def add_column( original, col_name, col_format, data=None ):
+def add_column( original, col_name, col_format, data=None, after=None ):
     """
     This function adds a column to an existing numpy record array and returns
     the result.
@@ -235,13 +230,54 @@ def add_column( original, col_name, col_format, data=None ):
         numpy record array
     """
 
-    new_dtype = { "names":[col_name], "formats":[col_format] }
+    ##  If after == None, place the column in the -1th position.
 
-    for col in original.dtype.names:
+    if after is None or after == -1:
 
-        new_dtype["names"].append( col )
-        new_dtype["formats"].append( original.dtype[col] )
+        new_dtype = {
+            "names":    [
+                original.dtype.names[i] for i in range( len(original.dtype) )
+            ],
+            "formats":  [
+                original.dtype[i]       for i in range( len(original.dtype) )
+            ]
+        }
 
+        new_dtype["names"].append( col_name )
+        new_dtype["formats"].append( col_format )
+
+    ##  If after == 0, place the column in the 0th position.
+
+    if after == 0 or after == "0":
+
+        new_dtype = { "names": [col_name], "formats": [col_format] }
+
+        for col in original.dtype.names:
+
+            new_dtype["names"].append( col )
+            new_dtype["formats"].append( original.dtype[col] )
+
+    ##  Otherwise, put the new column after the column specified by after.
+
+    new_dtype   = { "names": [], "formats": [] }
+
+    found       = False
+
+    for i in range( len(original.dtype) ):
+
+        new_dtype["names"].append( original.dtype.names[i] )
+        new_dtype["formats"].append( original.dtype[i] )
+
+        if original.dtype.names[i] == after:
+            found   = True
+            new_dtype["names"].append( col_name )
+            new_dtype["formats"].append( col_format )
+
+    if found is False:
+        new_dtype["names"].append( col_name )
+        new_dtype["formats"].append( col_format )
+
+    ##  Declare the new array.
 
     new_array = np.zeros( original.size, dtype=new_dtype )
 
@@ -255,8 +291,8 @@ def add_column( original, col_name, col_format, data=None ):
 
     return new_array
 
-################################################################################
-###   n u m p y   f o r m a t s
+##  ============================================================================
+##  numpy formats
 #
 # DATA_TYPE       DESCRIPTION
 #

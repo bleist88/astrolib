@@ -1,6 +1,5 @@
 
-import numpy as np
-import matplotlib.pyplot as pyplot
+from ._imports import *
 
 ##  ========================================================================  ##
 
@@ -25,7 +24,6 @@ def clean_sample( sample, sigma, epsilon, iters=20 ):
 
         if iters <= 0:
             break
-
         iters  -= 1
 
         ##  Calculate outliers.
@@ -34,8 +32,8 @@ def clean_sample( sample, sigma, epsilon, iters=20 ):
         std         = np.std( sample )
 
         outliers    = np.where(
-            (sample     > mean + sigma * std) |
-            (sample     < mean - sigma * std)
+            (sample > mean + sigma * std) |
+            (sample < mean - sigma * std)
         )[0]
 
         ##  Break if the mean fraction changed more than epsilon.
@@ -102,9 +100,8 @@ def smooth( x, y, std ):
     Y       = np.copy( y )
 
     for i in range( 1, x.size-1 ):
-
         weights = np.exp( -.5 * ((x - x[i]) / std)**2 )
-        Y[i] = np.average( y, weights=weights )
+        Y[i]    = np.average( y, weights=weights )
 
     return  Y
 
@@ -124,17 +121,7 @@ def derivative( x, y ):
 
 ##  ========================================================================  ##
 
-def interpolate( x, y, X=None, dx=None, std=None ):
-
-    ##  Smooth the function if std is not None.
-
-    if std is not None:
-        y   = smooth( x, y, std )
-
-    ##  Create X array if given dx.
-
-    if X is None and dx is not None:
-        X   = np.arange( np.min(x), np.max(x) + dx, dx )
+def interpolate( X, x, y ):
 
     ##  Create Y array.
 
@@ -143,11 +130,10 @@ def interpolate( x, y, X=None, dx=None, std=None ):
     ##  Calculate the derivative.
 
     d   = derivative( x, y )
-    D   = derivative( x, d )
 
     ##  Loop through all X points.
 
-    for i in range( 1, X.size ):
+    for i in np.where( (np.min(x) <= X) & (X <= np.max(x)) )[0][1:-1]:
         for j in range( x.size - 1 ):
             if X[i] >= x[j] and X[i] < x[j+1]:
 
@@ -163,10 +149,10 @@ def interpolate( x, y, X=None, dx=None, std=None ):
 
     ##  Estimate endpoints.
 
-    Y[0]    = Y[0]
+    Y[0]    = Y[1]
     Y[-1]   = Y[-2]
 
-    return  X, Y
+    return  Y
 
 ##  ========================================================================  ##
 
@@ -205,7 +191,7 @@ def fold( x1, y1, x2, y2, X=None ):
 
     ##  Integrate the Filter with the SED to obtain the flux.
 
-    flux        = np.trapz( Y1 * Y2, x=X )
+    flux    = np.trapz( Y1 * Y2, x=X )
 
     return  flux
 

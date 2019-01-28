@@ -17,9 +17,9 @@ conda-install:
 ##	Updating.
 
 update:
-	git add -A;
-	git commit -m "updating";
-	git push;
+	#git add -A;
+	#git commit -m "updating";
+	#git push;
 	conda update --use-local ${package};
 
 ##	Housekeeping.
@@ -28,3 +28,4 @@ clean:
 	rm -r astrolib.egg-info;
 	rm -r build;
 	rm record.txt;
+

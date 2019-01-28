@@ -2,7 +2,7 @@
 This file houses the managers used to manage the field, data, filters and SEDs.
 """
 
-from .__imports__   import *
+from ._imports import *
 
 ##  ============================================================================
 
@@ -10,11 +10,10 @@ from .__imports__   import *
 
 master_dtype    = {
     "names":    [
-        "id",  "matches", "alpha", "delta", "Rc", "S", "n", "Rn"
+        "id",  "matches", "alpha", "delta", "Rc", "S"
     ],
     "formats":  [
-        "int64", "int64", "float64", "float64", "float64", "float64",
-        "int64", "float64"
+        "int64", "int64", "float64", "float64", "float64", "float64"
     ]
 }
 
@@ -27,67 +26,133 @@ class master:
         ##  Members
 
         self.file_name      = file_name
+        self.fits_cube      = None
 
-        self.alpha0         = None
-        self.detla0         = None
+        self.master         = np.zeros( 0, dtype=master_dtype )
+        self.N              = 0
+        self.alpha          = None
+        self.delta          = None
 
-        self.master         = np.zeros(0, dtype=master_dtype)
-        self.N              = None
-
-        self.list           = []
-        self.images         = {}
         self.catalogs       = {}
         self.Rc             = {}
 
-        ##  Initialization
+        ##  Initialization.
 
-        if init is False:
-            self.open( file_name )
-
+        if init is True:
+            self.init_fits( file_name )
+        elif init is False:
+            self.open( self.file_name )
         else:
-            pickle.dump( self, gzip.open(self.file_name, "wb") )
+            raise   Exception("'init' must be set to either 'True' or 'False'.")
 
     def display( self ):
         """
         Display attributes into the terminal.
         """
-        print(  "Master:  ",        self.file_name      )
-        print(  "Number:  ",        self.N              )
-        print(  "alpha0:  ",        self.alpha0         )
-        print(  "delta0:  ",        self.delta0         )
+        print( self.file_name                           )
+        print( "       N:      ",  self.N               )
+        print( "   alpha:      ",  self.alpha           )
+        print( "   delta:      ",  self.delta           )
         print(                                          )
-        print(  "extensions:  ",    len(self.list)      )
-        print(  "   0:    ",        "master"            )
-        for i, ext in enumerate( self.list ):
-            print(  "  ", i+1, ":  ",     ext           )
+        print( "catalogs:      ",  len(self.catalogs)   )
+        print( "       1:      ",  "master"             )
+        for i, cat in enumerate( self.catalogs ):
+            print( "       ", i+2, "    ", cat          )
         print(                                          )
 
-##  ========================================================================
+    ##  ========================================================================
     ##  File Management
+
+    def open( self, file_name ):
+        """
+        Set all class members from the master fits cube meta data and catalog
+        extension data.
+        """
+
+        ##  Open the fits cube.
+
+        self.fits_cube  = fits.open( file_name )
+
+        ##  Retrieve meta data and master catalog.
+
+        self.master     = self.fits_cube["master"].data
+        self.N          = self.fits_cube["master"].data.size
+        self.alpha      = self.fits_cube["master"].header["alpha"]
+        self.delta      = self.fits_cube["master"].header["delta"]
+
+        ##  Retrieve all extensions.
+
+        for i in range( 2, len(self.fits_cube) ):
+
+            cat                     = self.fits_cube[i].header["EXTNAME"]
+            self.catalogs[ cat ]    = self.fits_cube[i].data
+            self.Rc[ cat ]          = self.fits_cube[i].header["Rc"]
 
     def save( self, saveas=None, overwrite=False ):
         """
-        Saves the object to a python pickle file.
+        Saves the object to a FITS cube.
 
         Arguments:
             saveas=None     - file path to save to; if None, uses existing path
             overwrite=False - if overwrite=True, overwrites existing file paths
         """
 
-        if saveas is None:
-            saveas  = self.file_name
+        ##  Set the master catalog extension.
 
-        io.save_obj( self, saveas, overwrite=overwrite )
+        self.fits_cube["master"].header.set( "N",       self.N      )
+        self.fits_cube["master"].header.set( "alpha",   self.alpha  )
+        self.fits_cube["master"].header.set( "delta",   self.delta  )
 
-    def open( self, file_name, force=False ):
+        ##  Set all catalog extension data and headers.
+
+        for cat in self.catalogs:
+
+            self.fits_cube[ cat ].data      = self.catalogs[cat]
+            self.fits_cube[ cat ].header.set( "Rc", self.Rc[cat] )
+
+        ##  Write to the fits cube.
+
+        self.fits_cube.writeto( self.file_name, overwrite=overwrite )
+
+    def init_fits( self, file_name ):
         """
-        Opens and retrieves the class attributes from an existing pickle file.
+        Initialize a FITS file to store the master catalog cube.  The 0th
+        extension contains no useful information.  The 1st extension contains
+        the global meta data information in the header (N, alpha, delta) and the
+        master catalog array in binary table format.  The remaining extensions
+        are the correlated catalog arrays in binary table format.  Any catalog
+        extension can be accessed via its index in the cube or by catalog name.
 
         Arguments:
-            file_name       - file path to open
+            file_name       - file path to write to
+            overwrite=False - if True, overwrites existing file path
         """
 
-        io.open_obj( self, file_name, force=force )
+        ##  Initialize the FITS object.
+
+        primary_ext     = fits.PrimaryHDU( np.zeros((10,10)) )
+        primary_ext.header.set( "EXTNAME", "primary")
+
+        master_ext      = fits.BinTableHDU.from_columns( self.master )
+        master_ext.header.set( "EXTNAME", "master" )
+
+        hdu_list        = fits.HDUList( [primary_ext, master_ext] )
+
+        ##  Write info to the fits header.
+
+        hdu_list["master"].header.set( "N", 0 )
+        hdu_list["master"].header.set( "alpha", None )
+        hdu_list["master"].header.set( "delta", None )
+
+        ##  Write to a FITS file.
+
+        if os.path.isfile( file_name ):
+            raise   Exception("%s already exists." % file_name)
+        else:
+            hdu_list.writeto( file_name )
+
+        self.file_name  = file_name
+        self.fits_cube  = fits.open( file_name )
 
     ##  ========================================================================
     ##  Writing Catalogs
@@ -98,7 +163,7 @@ class master:
 
         Arguments:
             cat_name    - name of the extension to get the data array; if the
-                          name 'master' is given, writes the master array.
+                          name "master" is given, writes the master array.
             file_name   - file path to write to
         """
 
@@ -108,60 +173,10 @@ class master:
         else:
             io.write( file_name, self.catalogs[cat_name] )
 
-    def write_fits( self, file_name, overwrite=False ):
-        """
-        Write the MCC to a FITS cube.  The zeroth extension is an empty array
-        and the miscellaneous member information is written to the header.  The
-        first extension is the master catalog array in binary table format.  The
-        remaining extensions are the correlated catalog arrays in binary table
-        format.  Extensions [1:] may be accessed via their catalong names rather
-        than extension index.
-
-        Arguments:
-            file_name       - file path to write to
-            overwrite=False - if True, overwrites existing file path
-        """
-
-        ##  Initialize the FITS object.
-
-        primary_ext     = fits.PrimaryHDU( np.zeros((10,10)) )
-        master_ext      = fits.BinTableHDU.from_columns( self.master )
-        master_ext.header["EXTNAME"]    = "master"
-
-        hdu_list        = [primary_ext, master_ext]
-
-        for i, cat in enumerate( self.list ):
-
-            catalog     = self.catalogs[ cat ]
-            extension   = fits.BinTableHDU.from_columns( catalog )
-            extension.header["EXTNAME"] = cat
-            hdu_list.append( extension )
-
-        hdu_list        = fits.HDUList( hdu_list )
-
-        ##  Write info to the fits header.
-
-        hdu_list[0].header.set( "FILE_NAME", self.file_name )
-        hdu_list[0].header.set( "NUMBER", self.N )
-        hdu_list[0].header.set( "ext_1", "Master" )
-
-        for i, cat in enumerate( self.list ):
-
-            hdu_list[0].header.set( "ext_%i" %(i+2), cat )
-
-            N   = np.where( self.catalogs[cat]["id"] >= 0 )[0].size
-
-            hdu_list[cat].header.set( "N", N )
-            hdu_list[cat].header.set( "Rc", self.Rc[cat] )
-
-        ##  Write to a FITS file.
-
-        hdu_list.writeto( file_name, overwrite=overwrite )
-
     ##  ========================================================================
     ##  Additions and Correlation
 
-    def append( self, cat_name, catalog, Rc=1, IM=None ):
+    def append( self, cat_name, catalog, Rc=None ):
         """
         Append an array to the catalog dictionary.
 
@@ -175,17 +190,21 @@ class master:
 
         ##  Make sure this cat_name is not already in anything important.
 
-        if cat_name in self.list:
-            raise   Exception("An %s is already in 'Master.list'." % cat_name)
-
         if cat_name in self.catalogs:
-            raise   Exception("An %s is already in 'Master.catalogs'." % cat_name)
+            raise   Exception(
+                "An %s is already in 'master.catalogs'." % cat_name
+            )
 
-        ##  Update all parameters.
+        ##  Append catalog to the fits cube.
 
-        self.list.append( cat_name )
+        hdu     = fits.BinTableHDU.from_columns( catalog )
+        hdu.header.set( "EXTNAME",  cat_name )
+        hdu.header.set( "Rc",       Rc )
+        self.fits_cube.append( hdu )
+
+        ##  Update all class members.
+
         self.catalogs[ cat_name ]   = catalog
-        self.images[ cat_name ]     = IM
         self.Rc[ cat_name ]         = Rc
 
     def update( self ):
@@ -205,8 +224,7 @@ class master:
 
         Ns      = []
 
-        for cat in self.list:
-
+        for cat in self.catalogs:
             Ns.append( self.catalogs[cat].size )
 
         self.N  = np.max( Ns )
@@ -217,22 +235,22 @@ class master:
         additional  = np.zeros(self.N-self.master.size, dtype=self.master.dtype)
         additional.fill(-99)
         self.master = np.concatenate( (self.master, additional) )
-        self.master["id"]   = np.arange( 1, self.N + 1 )
+        self.master["id"]   = np.arange( self.N )
 
         ##  Add array of -99s to each extension.
 
-        for cat in self.list:
+        for cat in self.catalogs:
 
             catalog     = self.catalogs[ cat ]
             additional  = np.zeros( self.N - catalog.size, dtype=catalog.dtype )
             additional.fill(-99)
             catalog                 = np.concatenate( (catalog, additional) )
-            catalog["id"]           = np.arange( 1, self.N + 1 )
+            catalog["id"]           = np.arange( self.N )
             self.catalogs[ cat ]    = catalog
 
         ##  Update all master catalog positions with highest resolution data.
 
-        for cat in self.list:
+        for cat in self.catalogs:
 
             catalog = self.catalogs[ cat ]
 
@@ -257,7 +275,7 @@ class master:
         self.master["S"]        = 0
         self.master["matches"]  = 0
 
-        for cat in self.list:
+        for cat in self.catalogs:
 
             catalog         = self.catalogs[ cat ]
             matched         = np.where( catalog["alpha"] >= 0 )[0]
@@ -267,45 +285,41 @@ class master:
                 (self.master["delta"][matched] - catalog["delta"][matched])**2
             )
 
-            matched = np.where( catalog["alpha"] >= 0 )[0]
             self.master["matches"][matched] += 1
 
-        self.master["S"]   /= (self.master["matches"] - 1)
+        self.master["S"]       /= (self.master["matches"] - 1)
+        self.fits_cube[1].data  = self.master
 
-        ##  Save.
+    # def find_neighbors( self ):
+    #     """
+    #     For all objects in the master catalog, find the nearest neighbor and
+    #     the radial distance (sit back, this may take a while).
+    #     """
+    #
+    #     master  = self.master
+    #
+    #     for i in range( master.size ):
+    #
+    #         io.progress( i, master.size )
+    #
+    #         other   = np.where( master["id"] != master[i]["id"] )[0]
+    #
+    #         R       = np.sqrt(
+    #             (master[i]["alpha"] - master[other]["alpha"])**2 +
+    #             (master[i]["delta"] - master[other]["delta"])**2
+    #         )
+    #
+    #         r       = np.min( R )
+    #
+    #         j       = other[ np.where( R == r )[0] ][0]
+    #
+    #         master[i]["n"]  = master[j]["id"]
+    #         master[i]["Rn"] = np.sqrt(
+    #             (master[i]["alpha"] - master[j]["alpha"])**2 +
+    #             (master[i]["delta"] - master[j]["delta"])**2
+    #         )
 
-        self.save( overwrite=True )
-
-    def find_neighbors( self ):
-        """
-        For all objects in the master catalog, find the nearest neighbor and
-        the radial distance (sit back, this may take a while).
-        """
-
-        master  = self.master
-
-        for i in range( master.size ):
-
-            io.progress( i, master.size )
-
-            other   = np.where( master["id"] != master[i]["id"] )[0]
-
-            R       = np.sqrt(
-                (master[i]["alpha"] - master[other]["alpha"])**2 +
-                (master[i]["delta"] - master[other]["delta"])**2
-            )
-
-            r       = np.min( R )
-
-            j       = other[ np.where( R == r )[0] ][0]
-
-            master[i]["n"]  = master[j]["id"]
-            master[i]["Rn"] = np.sqrt(
-                (master[i]["alpha"] - master[j]["alpha"])**2 +
-                (master[i]["delta"] - master[j]["delta"])**2
-            )
-
-    def add_catalog( self, cat_name, catalog, Rc, append=True, IM=None ):
+    def correlate( self, cat_name, catalog, Rc, append=True ):
         """
         Correlates all objects from the new catalog to the existing master
         catalog extension and then adds the created extension to the MCC using
@@ -316,13 +330,11 @@ class master:
             catalog     - catalog array to correlate to the master
             Rc          - correlation radius (R < Rc is a match)
             append=True - if True, adds non-matched objects to the MCC
-            IM=None     - image manager for the input catalog (if applicable)
         """
 
         ##  Read in input catalog and add a master id column.
 
         if "id" not in catalog.dtype.names:
-
             catalog  = io.add_column( catalog, "id", "int64" )
 
         ##  Perform correlation with the master catalog.
@@ -335,7 +347,6 @@ class master:
 
         ##  Create the new catalog master.
         ##  Append unmatched objects if Append==True.
-
         new_cat         = np.zeros( self.master.size, dtype=catalog.dtype )
         new_cat.fill(-99)
         new_cat[Pa]     = catalog[ M[Pa] ]
@@ -350,87 +361,200 @@ class master:
 
         self.append( cat_name, new_cat, Rc=Rc )
         self.update()
-        self.save( overwrite=True )
+        #self.save( overwrite=True )
+
+    def remove_cat( self, cat_name ):
+
+        ##  Remove from fits cube.
+
+        self.fits_cube.pop
+
+        ##  Remove from class members.
+
+        self.catalogs.pop( cat_name )
+        self.images.pop( cat_name )
+        self.Rc.pop( cat_name )
+        self.update()
 
     ##  ========================================================================
-    ##  This routine is currently down.  I have this written with images as
-    ##  file paths rather than image managers.
 
-    # def test_coverage( self, cat, data_dir=None ):
-    #
-    #     ##  Loop through all extensions and for those which are associated with
-    #     ##  a set of images, test for coverage in the field of view in image.
-    #
-    #     master      = self.master
-    #     catalog     = self.catalogs[ cat ]
-    #     images      = self.images[ cat ]
-    #
-    #     ##  Place the directory in each file name.
-    #
-    #     if data_dir is not None:
-    #         for i in range( len(images) ):
-    #             images[i]   = os.path.join( data_dir, images[i] )
-    #
-    #     ## Set any unique objects which are not located within an
-    #     ## image equal to -88 for non-detection but covered.
-    #
-    #     for im_file in images:
-    #
-    #         print( 'Checking object coverage in %s...' % im_file )
-    #
-    #         data    = fits.getdata( im_file )
-    #         header  = fits.getheader( im_file )
-    #         world   = WCS( header )
-    #
-    #         ## Find pixel coordinates of non_detected unique objects.
-    #         ## Start by assuming all non_dets are out_fields.
-    #
-    #         non_dets    = np.where( catalog["alpha"] < 0 )[0]
-    #
-    #         ## Determine validity of pixel coordinates.
-    #         ## Criteria:
-    #         ##      1.  Inside of valid pixel ranges.
-    #         ##      2.  Pixel value is not 0.0 or NAN.
-    #
-    #         if non_dets.size > 0:
-    #
-    #             y, x        = world.wcs_world2pix(
-    #                 master[ non_dets ][ "alpha" ],
-    #                 master[ non_dets ][ "delta" ],
-    #                 1
-    #             )
-    #
-    #             y, x        = y.astype('int'), x.astype('int')
-    #
-    #             in_pix      = non_dets[
-    #                 np.where(
-    #                     ( x > 0 )               &
-    #                     ( x < data.shape[0] )   &
-    #                     ( y > 0 )               &
-    #                     ( y < data.shape[1] )
-    #                 )[0]
-    #             ]
-    #
-    #             if in_pix.size > 0:
-    #
-    #                 y, x        = world.wcs_world2pix(
-    #                     master[ in_pix ][ "alpha" ],
-    #                     master[ in_pix ][ "delta" ],
-    #                     1
-    #                 )
-    #
-    #                 y, x        = y.astype('int'), x.astype('int')
-    #
-    #                 in_fields   = in_pix[
-    #                     np.where(
-    #                         ( data[x,y] != 0.0 )            &
-    #                         ( np.isfinite(data[x,y]) )
-    #                     )[0]
-    #                 ]
-    #
-    #                 for i in in_fields:
-    #                     catalog[i].fill( -88 )
-    #
-    #     ##  Update the catalog.
-    #
-    #     self.catalogs[ cat ]    = catalog
+    def set_frames( self, cat_name, image_file ):
+        """
+        This function determines, for those objects which have -99 values for
+        alpha, whether or not the position of the object is not covered by the
+        image data or covered by the data but not present in the original
+        catalog.  The column will take on the values
+            *   -1          not covered
+            *   frame       covered but not detected
+        where frame is the photo.image.frame in which the object would be
+        present.
+        """
+
+        ##  Grab the catalog.
+
+        catalog = self.catalogs[ cat_name ]
+
+        ##  Add "frame" column if it doesn't already exist.
+
+        if "frame" not in catalog.dtype.names:
+            catalog = io.add_column( catalog, "frame", "int64", after="id" )
+
+        ##  Open the image cube.
+
+        cube    = photo.cube( image_file, type="sci" )
+
+        for i in range(len(cube)):
+            cube[i].data[ np.where(cube[i].data == 0.0) ]   = np.nan
+
+        ##  Designate a stamp to each image.
+
+        stamps  = [ photo.stamp( image, S=2, unit="pix" ) for image in cube ]
+
+        ##  Find the best frame for all objects in the master catalog.
+
+        catalog["frame"]    = photo.find_best_frame(
+            image_file, self.master["alpha"], self.master["delta"]
+        )
+
+        ##  For each frame, look for all objects closest to this frame.
+
+        for i, image in enumerate( cube ):
+
+            io.progress(
+                i, len(cube),
+                alert="Testing coverage in each frame in %s." % image_file
+            )
+
+            nots    = np.where(
+                (catalog["frame"] == image.frame) & (catalog["alpha"] < 0)
+            )[0]
+
+            ##  For each object in this frame, target the stamp.
+
+            for n in nots:
+
+                stamps[i].set_target(
+                    self.master["alpha"][n], self.master["delta"][n]
+                )
+
+                ##  Try plotting.
+
+                # fig = pyplot.figure()
+                # ax  = fig.add_subplot(111)
+                #
+                # ##  Look for bad values.
+                #
+                # if not np.isfinite( np.sum(stamps[i].data) ):
+                #     if True in np.isnan( stamps[i].data ):
+                #         catalog["frame"][n] = -1
+                #         print( stamps[i].data )
+                #         stamps[i].plot_stamp( ax )
+                #         pyplot.savefig( "Coverage/" + cat_name + ".png" )
+                #         pyplot.close()
+
+                bad = 0
+                for k in range( stamps[i].data.shape[0] ):
+                    for l in range( stamps[i].data.shape[1] ):
+                        if np.isnan( stamps[i].data[k,l] ):
+                            bad += 1
+
+                if bad > 2:
+                    catalog["frame"][n] = -1
+
+        ##  Save the changes to the master.
+
+        self.catalogs[ cat_name ]   = catalog
+
+        self.save( self.file_name, overwrite=True )
+
+        ##  Testing this.
+        #
+        #a   = np.where( catalog["frame"] < 0 )[0]   ##  rx
+        #b   = np.where(
+        #    (catalog["alpha"] < 0) & (catalog["frame"] >= 0)
+        #)[0]   ##  yx
+        #
+        #pyplot.plot( self.master["alpha"], self.master["delta"], "kx", ms=0.3 )
+        #pyplot.plot(
+        #    self.master["alpha"][a], self.master["delta"][a], "rx", ms=0.1
+        #)
+        #pyplot.plot(
+        #    self.master["alpha"][b], self.master["delta"][b], "yx", ms=0.2
+        #)
+        #pyplot.show()
+
+        # ##  Loop through all extensions and for those which are associated with
+        # ##  a set of images, test for coverage in the field of view in image.
+        # master      = self.master
+        # catalog     = self.catalogs[ cat ]
+        # images      = self.images[ cat ]
+        #
+        # ##  Place the directory in each file name.
+        #
+        # if data_dir is not None:
+        #     for i in range( len(images) ):
+        #         images[i]   = os.path.join( data_dir, images[i] )
+        #
+        # ## Set any unique objects which are not located within an
+        # ## image equal to -88 for non-detection but covered.
+        #
+        # for im_file in images:
+        #
+        #     print( 'Checking object coverage in %s...' % im_file )
+        #
+        #     data    = fits.getdata( im_file )
+        #     header  = fits.getheader( im_file )
+        #     world   = WCS( header )
+        #
+        #     ## Find pixel coordinates of non_detected unique objects.
+        #     ## Start by assuming all non_dets are out_fields.
+        #
+        #     non_dets    = np.where( catalog["alpha"] < 0 )[0]
+        #
+        #     ## Determine validity of pixel coordinates.
+        #     ## Criteria:
+        #     ##      1.  Inside of valid pixel ranges.
+        #     ##      2.  Pixel value is not 0.0 or NAN.
+        #
+        #     if non_dets.size > 0:
+        #
+        #         y, x        = world.wcs_world2pix(
+        #             master[ non_dets ][ "alpha" ],
+        #             master[ non_dets ][ "delta" ],
+        #             1
+        #         )
+        #
+        #         y, x        = y.astype('int'), x.astype('int')
+        #
+        #         in_pix      = non_dets[
+        #             np.where(
+        #                 ( x > 0 )               &
+        #                 ( x < data.shape[0] )   &
+        #                 ( y > 0 )               &
+        #                 ( y < data.shape[1] )
+        #             )[0]
+        #         ]
+        #
+        #         if in_pix.size > 0:
+        #
+        #             y, x        = world.wcs_world2pix(
+        #                 master[ in_pix ][ "alpha" ],
+        #                 master[ in_pix ][ "delta" ],
+        #                 1
+        #             )
+        #
+        #             y, x        = y.astype('int'), x.astype('int')
+        #
+        #             in_fields   = in_pix[
+        #                 np.where(
+        #                     ( data[x,y] != 0.0 )            &
+        #                     ( np.isfinite(data[x,y]) )
+        #                 )[0]
+        #             ]
+        #
+        #             for i in in_fields:
+        #                 catalog[i].fill( -88 )
+        #
+        # ##  Update the catalog.
+        #
+        # self.catalogs[ cat ]    = catalog

@@ -17,7 +17,7 @@ outputs:
                         ( flux, flux_err, mag, mag_err ) for each ap. radius
 """
 
-from    __imports__ import *
+from astrolib.imports import *
 
 ##  ============================================================================
 ##  Setup
@@ -34,14 +34,11 @@ configs_file    = cl_parser.get_flag( "-c", default="apertures.cfg" )
 
 ##  Read in configs.
 
-print( "Reading in %s for configs..." % configs_file )
+print( "Using configs from %s..." % configs_file )
 
 configs         = io.get_configs( configs_file )
 
-input_file      = configs["input_file"]
-images_file     = configs["images_file"]
-data_path       = configs["data_path"]
-
+source_file     = configs["source_file"]
 unit            = configs["unit"]
 R               = configs["R"]
 R_i             = configs["R_i"]
@@ -49,24 +46,27 @@ R_o             = configs["R_o"]
 sigma           = configs["sigma"]
 epsilon         = configs["epsilon"]
 
-print()
+runs            = configs["run"]
+if isinstance(runs[0], list):
+    im_files    = [ runs[i][0] for i in range( len(runs) ) ]
+    out_files   = [ runs[i][1] for i in range( len(runs) ) ]
+else:
+    im_files    = [ runs[0] ]
+    out_files   = [ runs[1] ]
+
 for key in configs:
-    print( key, (20 - len(key)) * " ", configs[ key ] )
+    if "run" in key:
+        continue
+    print( "   ", key, (20 - len(key)) * " ", configs[ key ] )
 print()
-
-##  Create list of images from the images file.
-##  Add the data path to the file list.
-
-image_files     = [ im for im in io.read( images_file )["image"] ]
-
-for i, im_file in enumerate( image_files ):
-    image_files[i]  = os.path.join( data_path, im_file )
 
 ##  Read in sources from the input file.
 
-print( "Reading %s for sources..." % input_file )
+print( "Using sources from %s..." % source_file )
 
-sources         = io.read( input_file )
+sources         = io.read( source_file )
+
+print( "    %i sources" % sources.size )
 
 ##  Create the output array.
 ##  Add flux_, flux_err_, mag_, mag_err_ columns for each aperture R.
@@ -83,10 +83,10 @@ mag_err_cols    = []
 
 for i, r in enumerate( R ):
 
-    flux_cols.append(       "flux_"     + str(r) )
-    flux_err_cols.append(   "flux_err_" + str(r) )
-    mag_cols.append(        "mag_"      + str(r) )
-    mag_err_cols.append(    "mag_err_"  + str(r) )
+    flux_cols.append(       "flux_" + str(r)            )
+    flux_err_cols.append(   "flux_" + str(r) + "_err"   )
+    mag_cols.append(        "mag_"  + str(r)            )
+    mag_err_cols.append(    "mag_"  + str(r) + "_err"   )
 
     out_dtype["names"].append(      flux_cols[i]        )
     out_dtype["names"].append(      flux_err_cols[i]    )
@@ -106,24 +106,25 @@ photometry["delta"] = sources["delta"]
 ##  ============================================================================
 ##  Photometry
 
-for im_file in image_files:
+for i, im_file in enumerate( im_files ):
 
     ##  Create a stamp object and set the apertures and annulus.
+
+    print()
+    print( "Performing aperture photometry on %s..." % im_file )
 
     S       = 1.1 * np.max( R_o )
     stamp   = photo.stamp( photo.image(im_file), S=S, unit=unit )
 
-    ##  For each source in the catalog...
-
-    print()
-    print( "Performing aperture photometry on %s..." % im_file )
     for key in ["pix_scale", "gain", "mag_0", "mag_0_err" ]:
-        print( key, (20 - len(key)) * " ", stamp.image.__dict__[ key ] )
+        print( "   ", key, (20 - len(key)) * " ", stamp.image.__dict__[ key ] )
     print()
 
-    for i, source in enumerate( sources ):
+    ##  Perform aperture photometry for each object in sources.
 
-        io.progress( i, sources.size )
+    for j, source in enumerate( sources ):
+
+        io.progress( j, sources.size )
 
         ##  Set the data and annulus and calculate the sky.
 
@@ -131,31 +132,30 @@ for im_file in image_files:
 
         ##  For each aperture radius given...
 
-        for j in range( len(R) ):
+        for k in range( len(R) ):
 
             ##  Set the aperture and annulus.
             ##  Calculate the background and flux.
 
-            stamp.set_aperture( R[j] )
-            stamp.set_annulus( R_i[j], R_o[j] )
+            stamp.set_aperture( R[k] )
+            stamp.set_annulus( R_i[k], R_o[k] )
             stamp.calc_sky( sigma=sigma, epsilon=epsilon )
             stamp.calc_flux( subtract=True )
 
             ##  Write to the data array.
 
-            R_str   = str( R[j] )
+            R_str   = str( R[k] )
 
-            photometry[i]["sky"]                = stamp.sky
-            photometry[i]["sky_std"]            = stamp.sky_std
-            photometry[i]["flux_" + R_str]      = stamp.flux
-            photometry[i]["flux_err_" + R_str]  = stamp.flux_err
-            photometry[i]["mag_" + R_str]       = stamp.mag
-            photometry[i]["mag_err_" + R_str]   = stamp.mag_err
+            photometry[j][ "sky"                    ]   = stamp.sky
+            photometry[j][ "sky_std"                ]   = stamp.sky_std
+            photometry[j][ "flux_" + R_str          ]   = stamp.flux
+            photometry[j][ "flux_" + R_str + "_err" ]   = stamp.flux_err
+            photometry[j][ "mag_"  + R_str          ]   = stamp.mag
+            photometry[j][ "mag_"  + R_str + "_err" ]   = stamp.mag_err
 
     ##  Create the output file path and write to file.
 
-    out_file    = io.parse_path( im_file )[1] + ".photo"
-    io.write( out_file, photometry )
+    io.write( out_files[i], photometry )
 
 print( "...done!" )
 print()

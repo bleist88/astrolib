@@ -1,33 +1,32 @@
 #!/anaconda3/bin/python3
 """
-This file contains scripted versions of MCC operations.
+This script is the command line access to astrolib.mcc
+
 Installation:
     1.  this script must be placed in PATH
     2.  chmod 777 <this file>
+
 Usage:
     ##  to create an MCC master catalog
     mcc create -cfg <configs_file> -mcc <mcc_file>
-    ##  to write a FITS file from the MCC file
-    mcc write_fits -mcc <mcc_file> -fits <fits_file>
-    ##  to write an ASCII file from an MCC extension
+
     ##  to add a catalog (and correlate) to a master catalog
     mcc add -mcc <mcc_file> -cfg <configs_file> -cat <cat_name>
 """
 
-from    astrolib import io, mcc
-import  os, sys
+from astrolib.imports import *
 
 ##  ============================================================================
 
 ##  Instantiate the cl_parser.
 
-cl_parser   = io.CL_Parser( sys.argv )
+cl_parser   = io.cl_parser( sys.argv )
 
 ##  Help flag.
 
 if cl_parser.get_boolean( "--help", default=False ):
 
-    print( "mcc is not working properly.")
+    print( "mcc does not have help written yet.")
     exit()
 
 ##  ============================================================================
@@ -47,14 +46,13 @@ if cl_parser.get_command( "create" ) is True:
 ##  ============================================================================
 ##  add catalog
 
-# if cl_parser.get_command( "add" ) is True:
-#
-#     ##  retrieve arguments
-#
-#     mcc_file        = cl_parser.get_flag( "-mcc",   default=None )
-#     configs_file    = cl_parser.get_flag( "-cfg",   default=False )
-#     cat_name        = cl_parser.get_flag( "-cat",   default=True )
-#     path            = cl_parser.get_flag( "-path",  default="." )
+if cl_parser.get_command( "add" ) is True:
+
+     ##  retrieve arguments.
+
+     fits_file      = cl_parser.get_flag( "-f", default=False )
+     input_file     = cl_parser.get_flag( "-i", defualt=False )
+     Rc             = float( cl_parser.get_flag("-Rc", default=False) )
 #
 #     ##  open the mcc and configs files
 #

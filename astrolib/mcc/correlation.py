@@ -2,20 +2,20 @@
 The module contains correlation functions and routines.
 """
 
-from    __future__  import absolute_import
-from    __future__  import division
-from    __future__  import print_function
-from    __future__  import unicode_literals
-
-from   .__imports__ import *
+from ._imports import *
 
 ##  ============================================================================
 
-def correlate( Ax, Ay, Bx, By, Rc, Rc_min=None ):
+def correlate( Ax, Ay, Bx, By, Rc, Rc_min=None, Rc_unit="arcsecs" ):
     """
     This function correlates objects from positions B to positions A using the
     correlation radius Rc.
     """
+
+    ##  Convert Rc units to degrees.
+
+    if Rc_unit in ["arcsecond","arcseconds","arcsec","arcsecs","as"]:
+        Rc /= 3600
 
     ##  Ensure that position arguments are numpy arrays with agreeable lengths.
     ##  Ensure that Rc argument becomes a numpy array.
@@ -24,11 +24,9 @@ def correlate( Ax, Ay, Bx, By, Rc, Rc_min=None ):
     Bx, By      = np.array( Bx ), np.array( By )
 
     if Ax.size != Ay.size:
-
         raise TypeError("Ax and Ay must be of the same length.")
 
     if Bx.size != By.size:
-
         raise TypeError("Bx and By must be of the same length.")
 
     if isinstance( Rc, (float, int) ):
@@ -45,13 +43,11 @@ def correlate( Ax, Ay, Bx, By, Rc, Rc_min=None ):
             raise TypeError("Rc must be of type 'float', 'int', or 'array'.")
 
         if Rc.size != Ax.size:
-
             raise TypeError(
                 "If Rc is an array, it must be the same size as Ax."
             )
 
     if Rc_min is not None:
-
         Rc[ np.where( Rc < Rc_min )[0] ]    = Rc_min
 
     ##  Create arrays to store matching indices from positions b onto a and an

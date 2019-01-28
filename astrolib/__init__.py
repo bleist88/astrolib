@@ -1,12 +1,6 @@
-"""
-A library of astronomy related packages.
-"""
 
-__all__     = [
-    "io", "mcc", "photo"
-]
-
+from . import imports
 from . import io
+from . import maths
 from . import mcc
 from . import photo
-from . import imports

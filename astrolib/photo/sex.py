@@ -2,7 +2,7 @@
 This module houses functions used in assisting SExtractor.
 """
 
-from .__imports__ import *
+from ._imports import *
 
 ##  ============================================================================
 
@@ -40,7 +40,7 @@ def sex( fits_file, sex_file, detection=None, command='sex' ):
 
 ##  ============================================================================
 
-def write_sex( image_manager, bsex_file, sex_file ):
+def write_sex( im_file, bsex_file, sex_file ):
     """
     This function reads in a .bsex file to write a .sex file for an image with
     details provided by the image manager.
@@ -48,61 +48,35 @@ def write_sex( image_manager, bsex_file, sex_file ):
 
     ##  Read in both .bsex and .sex files.
 
-    bsex_configs     = io.get_configs( bsex_file )
+    image           = photo.image( im_file )
+    sex_configs     = io.get_configs( bsex_file )
 
     ##  Handle file names.
 
-    telescope   = spec["telescope"][0]
-    Filter      = Instrument + "_" + Filter
+    name        = io.parse_path( image.file_name[1] )
 
-    sex_file    = "Astromatic/Configs/" + Filter + ".sex"
-    cat_file    = "Astromatic/Catalogs/" + Filter + ".cat"
+    cat_file    = name + sex_configs["CATALOG_NAME"]
+    check_file  = name + sex_configs["CHECKIMAGE_NAME"]
 
-    flag_file   = "Data/" + telescope + "/" + Filter + ".flg.fits"
-    check_file  = "Data/" + telescope + "/" + Filter + ".chk.fits"
-    weight_file = "Data/" + telescope + "/" + Filter + ".wht.fits"
-    var_file    = "Data/" + telescope + "/" + Filter + ".var.fits"
-    bg_file     = "Data/" + telescope + "/" + Filter + ".bg.fits"
-
-    ##  Test for flag images.
-
-    if os.path.isfile( flag_file ):
-        sex_configs["FLAG_IMAGE"]   = flag_file
-
+    if sex_configs["FLAG_IMAGE"] is not None:
+        flag_file   = name + sex_configs["FLAG_IMAGE"]
     else:
         sex_configs.pop( "FLAG_IMAGE" )
         sex_configs.pop( "FLAG_TYPE" )
 
-    ##  Test for weighs, variance or background images.
-
-    if os.path.isfile( weight_file ):
-        sex_configs["WEIGHT_IMAGE"] = weight_file
-        sex_configs["WEIGHT_TYPE"]  = "MAP_WEIGHT"
-
-    elif os.path.isfile( var_file ):
-        sex_configs["WEIGHT_IMAGE"] = var_file
-        sex_configs["WEIGHT_TYPE"]  = "MAP_VAR"
-
-    elif os.path.isfile( bg_file ):
-        sex_configs["WEIGHT_IMAGE"] = bg_file
-        sex_configs["WEIGHT_TYPE"]  = "BACKGROUND"
-
+    if sex_configs["WEIGHT_IMAGE"] is not None:
+        weight_file = name + sex_configs["WEIGHT_IMAGE"]
     else:
-        sex_configs.pop( "WEIGHT_IMAGE" )
-        sex_configs.pop( "WEIGHT_TYPE" )
-        sex_configs.pop( "WEIGHT_GAIN" )
+        sex_configs.pop("WEIGHT_IMAGE")
+        sex_configs.pop("WEIGHT_TYPE")
+        sex_configs.pop("WEIGHT_GAINE")
 
-    ##  Replace the appropriate .sex file default values from .specs file.
+    ##  Set image specific variables.
 
-    for config in sex_configs:
-        if config in var_changes:
-            sex_configs[config] = spec[ var_changes[config] ][0]
-
-    ##  Replace file names for catalog, flag, and check images.
-
-    sex_configs["CATALOG_NAME"]     = cat_file
-    sex_configs["CHECKIMAGE_NAME"]  = check_file
-    sex_configs["FLAG_IMAGE"]       = flag_file
+    sex_configs["PIXEL_SCALE"]      = image.pixel_scale
+    sex_configs["SEEING"]           = image.seeing
+    sex_configs["GAIN"]             = image.gain
+    sex_configs["MAG_ZEROPOINT"]    = image.mag_0
 
     ##  Write the new configurations as a .sex file.
 
@@ -120,13 +94,13 @@ def write_batch( sex_file, bsex_file, detection=None, command="sex" ):
 
     print( "Writing a .sex file for each image in the batch %s..." % bsex_file )
 
-    bsex_configs    = Io.read( bsex_file )
+    sex_configs    = Io.read( bsex_file )
 
-    for bsex_config in bsex_configs:
+    for sex_config in sex_configs:
 
-        print( "..." + bsex_config["fits_image"] + "." )
+        print( "..." + sex_config["fits_image"] + "." )
 
-        write_sex( sex_file, bsex_config )
+        write_sex( sex_file, sex_config )
 
 ##  ============================================================================
 
@@ -140,14 +114,14 @@ def batch_sex( sex_file, bsex_file, detection=None, command="sex" ):
 
     print( "Performing a batch SExtractor run on %s." % bsex_file )
 
-    bsex_configs    = Io.read( bsex_file )
+    sex_configs    = Io.read( bsex_file )
 
-    for bsex_config in bsex_configs:
+    for sex_config in sex_configs:
 
         sex_file    = None  ##  I need to get this from what was written by
                             ##  write_sex().
 
-        sex( bsex_config["fits_image"], sex_file, detection=detection, command=command )
+        sex( sex_config["fits_image"], sex_file, detection=detection, command=command )
 
 ##  ============================================================================
 

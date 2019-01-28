@@ -2,13 +2,7 @@
 This file contains tools used for improving plots.
 """
 
-
-from    __future__      import absolute_import
-from    __future__      import division
-from    __future__      import print_function
-from    __future__      import unicode_literals
-
-from   .__imports__     import *
+from ._imports import *
 
 ##  ============================================================================
 

@@ -1,0 +1,154 @@
+#!/anaconda3/bin/python3
+"""
+This file contains scripted versions of MCC operations.
+Installation:
+    1.  this script must be placed in PATH
+    2.  chmod 777 <this file>
+Usage:
+    ##  to create an MCC master catalog
+    mcc create -cfg <configs_file> -mcc <mcc_file>
+    ##  to write a FITS file from the MCC file
+    mcc write_fits -mcc <mcc_file> -fits <fits_file>
+    ##  to write an ASCII file from an MCC extension
+    ##  to add a catalog (and correlate) to a master catalog
+    mcc add -mcc <mcc_file> -cfg <configs_file> -cat <cat_name>
+"""
+
+from    astrolib import io, mcc
+import  os, sys
+
+##  ============================================================================
+
+##  Instantiate the cl_parser.
+
+cl_parser   = io.CL_Parser( sys.argv )
+
+##  Help flag.
+
+if cl_parser.get_boolean( "--help", default=False ):
+
+    print( "mcc is not working properly.")
+    exit()
+
+##  ============================================================================
+
+if cl_parser.get_command( "create" ) is True:
+
+    ##  Retrieve arguments.
+
+    mcc_file        = cl_parser.get_flag( "-o", default=None )
+    configs_file    = cl_parser.get_flag( "-c", default=None )
+    path            = cl_parser.get_flag( "-p", default="." )
+
+    ##  Run the mcc create routine.
+
+    mcc.create( mcc_file, configs_file, path=path )
+
+##  ============================================================================
+##  add catalog
+
+# if cl_parser.get_command( "add" ) is True:
+#
+#     ##  retrieve arguments
+#
+#     mcc_file        = cl_parser.get_flag( "-mcc",   default=None )
+#     configs_file    = cl_parser.get_flag( "-cfg",   default=False )
+#     cat_name        = cl_parser.get_flag( "-cat",   default=True )
+#     path            = cl_parser.get_flag( "-path",  default="." )
+#
+#     ##  open the mcc and configs files
+#
+#
+#     try:
+#         MC      = MCC.Master( mcc_file, init=False )
+#     except:
+#         raise Exception( "The MCC file '%s' was not found." % mcc_file )
+#
+#     try:
+#         configs = io.read( configs_file )
+#
+#     except:
+#         raise Exception( "The configs file '%s' was not found." % configs_file )
+#
+#     ##  get variables of the specified cat name
+#     ##  create a list of image file names
+#
+#     images  = []
+#
+#     found   = False
+#
+#     for i in range( len(configs) ):
+#
+#         if configs["name"][i] == cat_name:
+#
+#             found       = True
+#
+#             catalog     = configs["catalog"][i]
+#             Rc          = configs["Rc"][i] / 3600
+#             append      = configs["append"][i]
+#             images.append( configs["image"][i] )
+#
+#     if found is False:
+#
+#         raise Exception( "Could not find %s in the .cfg file." % cat_name )
+#
+#     ##  read the catalog file
+#
+#     new_cat     = io.read( os.path.join(path, catalog) )
+#
+#     ##  use the add function to add a new extension
+#
+#     MC.add_catalog( cat_name, new_cat, Rc, append=append, images=images )
+#
+# ##  ============================================================================
+# ##  write fits
+#
+# ##  this writes a FITS file from an MCC file
+#
+# if cl_parser.get_command( "write_fits" ) is True:
+#
+#     ##  retrieve arguments
+#
+#     mcc_file    = cl_parser.get_flag( "-mcc",   default=None )
+#     fits_file   = cl_parser.get_flag( "-fits",  default=None )
+#     clobber     = cl_parser.get_flag( "-clobber", default=False )
+#
+#     if clobber.lower() == "true":
+#         clobber = True
+#     elif clobber.lower() == "false":
+#         clobber = False
+#
+#     ##  open the MCC file
+#
+#     try:
+#         MC      = MCC.Master( mcc_file, init=False )
+#     except:
+#         raise Exception( "The MCC file '%s' was not found." % mcc_file )
+#
+#     ##  run the mcc write function
+#
+#     MC.write_fits( fits_file, clobber=clobber )
+#
+# ##  ============================================================================
+# ##  write ascii
+#
+# ##  this writes an ascii file from the MCC file
+#
+# if cl_parser.get_command( "write" ) is True:
+#
+#     ##  retrieve arguments
+#
+#     mcc_file    = cl_parser.get_flag( "-mcc",   default=None )
+#     cat         = cl_parser.get_flag( "-cat",   default=None )
+#     ascii_file  = cl_parser.get_flag( "-ascii", default=None )
+#
+#     ##  open the MCC file
+#
+#     try:
+#         MC      = MCC.Master( mcc_file, init=False )
+#     except:
+#         raise Exception( "The MCC file '%s' was not found." % mcc_file )
+#
+#     ##  use the MCC write method to write ascii
+#
+# MC.write( cat, ascii_file )

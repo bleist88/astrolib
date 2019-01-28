@@ -1,76 +1,76 @@
 
-from .__imports__   import *
+from ._imports import *
 
 ##  ========================================================================  ##
 
-def find_fits( fits_list, alpha, delta ):
+def find_best_frame( fits_file, alpha, delta ):
     """
-    Iterate through the list of FITS images and search for the sky position
-    given and determine the most preferable image for that position.
+    This function returns the frame number for which the "alpha" and "delta"
+    provided are closest to the center.
 
     Returns:
-        fits file (string)          -   best image
+        frame:              int32       - best frame
 
     Parameters:
-        fits_list (list,strings)    -   images to search through
-        alpha (float)               -   sky coordinate 1
-        delta (float)               -   sky coordinate 2
+        fits_list:          [string]    -   images to search through
+        alpha:              float       -   sky coordinate 1
+        delta:              float       -   sky coordinate 2
     """
 
-    image       = None      # Best image file name (string)
-    image_sep   = None      # distance to center pixel
+    ##  Open a fits cube of image objects.
 
-    ## Ensure that list is given.
+    images  = photo.cube( fits_file, type="sci" )
 
-    if not isinstance( fits_list, (list,tuple) ):
+    ##  For each photo.image, create an array of distances between.
 
-        lst = []
-        lst.append( fits_list )
+    distances   = np.zeros( (len(alpha), len(images)) )
+    im_frames   = [ im.frame for im in images ]
 
-    ## Iterate through list of images and store candidate images in which the
-    ## pixel value located at the given sky position is a reasonable value.
+    for i in range( len(images) ):
+        distances[:,i]  = np.sqrt(
+            (alpha - images[i].alpha_c)**2 + (delta - images[i].delta_c)**2
+        )
 
-    for i in range(len( fits_list )):
+    ##  Create frames array.
 
-        ## Get image data and wcs info.
+    frames = np.zeros( len(alpha), dtype="int32" )
 
-        data        = fits.getdata( fits_list[i] )
-        header      = fits.getheader( fits_list[i] )
-        image_wcs   = WCS( header )
+    for i in range( frames.size ):
 
-        ## Find pixel location of sky position.
-        print(alpha, delta)
-        position    = np.array([[ alpha, delta ]])
+        io.progress( i, frames.size, alert="Finding best frames." )
 
-        x           = image_wcs.wcs_world2pix( position, 1 )[0][1]
-        y           = image_wcs.wcs_world2pix( position, 1 )[0][0]
+        frames[i]   = im_frames[
+            int( np.where( distances[i] == np.min(distances[i]) )[0] )
+        ]
 
-        ## Determine the validity of the pixel location and value.
-        ## The location of the pixel must be within the shape of the image.
-        ## The value of the pixel must not be zero or nan.
+    return  frames
 
-        if x > 0 and y > 0 and x < data.shape[0] and y < data.shape[1]:
-
-            if data[ x,y ] != 0.0 and not np.isnan( data[ x,y ] ):
-
-                ## Calculate the separation between the sky position pixel and
-                ## the image center pixel.  If no image had been previously
-                ## stored, record this info.  If a previous image had been
-                ## recorded but this new separation is better, record this info.
-
-                sep =  ( data.shape[0]/2 - x )**2 + ( data.shape[1]/2 - x )**2
-
-                if image is None:
-
-                    image       = fits_list[i]
-                    image_sep   = sep
-
-                elif image is not None and sep < image_sep:
-
-                    image       = fits_list[i]
-                    image_sep   = sep
-
-    return image
+    # ##  Create a dictionary of distances to the center.
+    #
+    # frame       = None
+    # distance    = None
+    #
+    # ##  Iterate through the cube extensions.  Look through only "sci" types.
+    # ##  Retrieve the center pixel value and find the distance to the given.
+    #
+    # for i in range( len(fits_cube) ):
+    #
+    #     if fits_cube[i].header["type"] != "sci":
+    #         continue
+    #
+    #     alpha_c = fits_cube[i].header["CRVAL1"]
+    #     delta_c = fits_cube[i].header["CRVAL2"]
+    #
+    #     D   = np.sqrt( (alpha - alpha_c)**2 + (delta - delta_c)**2 )
+    #
+    #     if frame is None:
+    #         frame       = fits_cube[i].header["frame"]
+    #         distance    = D
+    #     elif D < distance:
+    #         frame       = fits_cube[i].header["frame"]
+    #         distance    = D
+    #
+    # return  frame
 
 ##  ============================================================================
 
@@ -92,3 +92,53 @@ def rescale( data, sigma=3, epsilon=.03, iters=20 ):
             break
 
     return data
+
+##  ============================================================================
+
+##  This was previously used in the find_fits() function which is now the
+##  find_best_frame() function.
+
+## Iterate through list of images and store candidate images in which the
+## pixel value located at the given sky position is a reasonable value.
+#
+# for i in range(len( fits_list )):
+#
+#     ## Get image data and wcs info.
+#
+#     data        = fits.getdata( fits_list[i] )
+#     header      = fits.getheader( fits_list[i] )
+#     image_wcs   = WCS( header )
+#
+#     ## Find pixel location of sky position.
+#     print(alpha, delta)
+#     position    = np.array([[ alpha, delta ]])
+#
+#     x           = image_wcs.wcs_world2pix( position, 1 )[0][1]
+#     y           = image_wcs.wcs_world2pix( position, 1 )[0][0]
+#
+#     ## Determine the validity of the pixel location and value.
+#     ## The location of the pixel must be within the shape of the image.
+#     ## The value of the pixel must not be zero or nan.
+#
+#     if x > 0 and y > 0 and x < data.shape[0] and y < data.shape[1]:
+#
+#         if data[ x,y ] != 0.0 and not np.isnan( data[ x,y ] ):
+#
+#             ## Calculate the separation between the sky position pixel and
+#             ## the image center pixel.  If no image had been previously
+#             ## stored, record this info.  If a previous image had been
+#             ## recorded but this new separation is better, record this info.
+#
+#             sep =  ( data.shape[0]/2 - x )**2 + ( data.shape[1]/2 - x )**2
+#
+#             if image is None:
+#
+#                 image       = fits_list[i]
+#                 image_sep   = sep
+#
+#             elif image is not None and sep < image_sep:
+#
+#                 image       = fits_list[i]
+#                 image_sep   = sep
+#
+# return image

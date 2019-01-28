@@ -1,11 +1,11 @@
 
-from astrolib.imports import *
+from ._imports import *
 
 ##  ============================================================================
 
 arc_units   = [
-    "second", "sec", "seconds", "secs",
-    "arcsecond", "arcsec", "arcseconds", "arcsecs", "as"
+    "second", "sec", "seconds", "secs", "arcsecond", "arcsec", "arcseconds",
+    "arcsecs", "as"
 ]
 
 deg_units   = [
@@ -33,7 +33,7 @@ class stamp:
 
         ##  Data Array Parameters
 
-        self.image      = image     ##  photo.image object
+        self.image      = image     ##  fits image
 
         self.gain       = None      ##  image gain [e-/adu]
         self.exp_time   = None      ##  exposure time [s]
@@ -85,7 +85,6 @@ class stamp:
         self.mag_err    = np.nan    ##  net magnitude error
         self.sky        = np.nan    ##  mean sky estimation
         self.sky_std    = np.nan    ##  deviation in sky value
-        self.gain       = np.nan    ##  gain (e-/adu)
 
         ##  ====================================================================
         ##  Instantiation
@@ -251,6 +250,45 @@ class stamp:
         self.psf_frac   = np.sum( self.aperture * self.psf )
         self.psf_frac  /= np.sum( self.psf )
 
+    def calc_psf( self, alpha, delta, R, R_i, R_o ):
+
+        ##  Exception handling.
+        ##  Force alpha and delta to have a length.
+
+        alpha, delta    = np.array( alpha ), np.array( delta )
+
+        if alpha.size != delta.size:
+            raise   Exception("`alpha` and `delta` must be of the same length.")
+
+        if alpha.size == 1:
+            alpha   = np.zeros( 2 ) + alpha
+            delta   = np.zeros( 2 ) + delta
+
+        ##  Create a new stamp object and an array to store psf samples.
+
+        new_stamp   = copy.copy( self )
+        psfs        = np.zeros( (alpha.size, self.shape[0], self.shape[1]) )
+
+        ##  Find each target.
+        ##  Calculate the magnitude of each object above the background.
+
+        for i in range( alpha.size ):
+
+            new_stamp.set_target( alpha[i], delta[i] )
+            new_stamp.set_aperture( R )
+            new_stamp.set_annulus( R_i, R_o )
+
+            new_stamp.calc_sky()
+            new_stamp.calc_flux( subtract=True )
+
+            psfs[i] = new_stamp.data / np.max( new_stamp.data )
+            psfs[i][ np.isnan( psfs[i] ) ] = 0.0
+
+        ##  Sum all psfs and normalize.
+
+        self.psf    = np.sum( psfs, axis=0 )
+        self.psf   /= np.sum( self.psf )
+
     ##  ========================================================================
     ##  Photometry
 
@@ -299,6 +337,10 @@ class stamp:
 
         self.mag_err    = 1.0857 * self.flux_err / self.flux
         self.mag_err    = np.sqrt( self.mag_err**2 + self.mag_0_err**2 )
+
+    def calc_centroid( self ):
+
+        return None
 
     ##  ========================================================================
     ##  Plotting
@@ -407,7 +449,8 @@ class stamp:
     #     except:
     #         pass
     #
-    # def create_figure( self, R=None, sigma=3, epsilon=0.03, yscale="log", saveas=False ):
+    # def create_figure( self, R=None, sigma=3,
+    #                          epsilon=0.03, yscale="log", saveas=False ):
     #
     #     Fig     = pyplot.figure( figsize=(14,6) )
     #     Ax1     = Fig.add_subplot( 1,2,1 )

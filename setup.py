@@ -12,7 +12,11 @@ setup(
     license             = open("LICENSE").read(),
     zip_safe            = True,
     packages            = [
-        "astrolib/io", "astrolib/mcc", "astrolib/photo"
+        "astrolib/imports",
+        "astrolib/io",
+        "astrolib/mcc",
+        "astrolib/photo",
+        "astrolib/maths",
     ],
     scripts             = [
         "astrolib/scripts/mcc", "astrolib/scripts/pysex",

@@ -1,0 +1,119 @@
+#!/anaconda3/bin/python3
+"""
+This script performs mock photometry with a set of SEDs and filter curves,
+producing
+    1.  An array of SEDs and filter curves all on the same grid.  The two arrays
+        are organized as follows:
+            SEDs:       wavelength, sed_1, sed_2, sed_3, ..., sed_nth
+            Filters:    wavelength, f_1, f_2,  ..., f_mth
+    2.  An array of magnitudes generated for each desired redshift.
+            z,  m_1, m_2, m_3, ..., m_mth
+    3.  An array of colors for each desired redshift in the form of a matrix.
+            ---  m_1   m_2   m_3   ...
+            m_1   0    c_12  c_13  ...
+            m_2  c_21   0    c_23  ...
+            m_3  c_31  c_32   0    ...
+            ...   ...   ...   ...  ...
+"""
+
+from astrolib.imports import *
+
+##  ============================================================================
+##  configs
+
+##  Read in command line arguments.
+
+cl_parser       = io.CL_Parser( sys.argv )
+configs_file    = cl_parser.get_flag( "-c", default="mock.cfg" )
+
+##  Read in the configs.
+
+configs             = io.get_configs( configs_file )
+
+seds_out_file       = configs["seds_file"]
+sed_files           = configs["sed"]
+filters_out_file    = configs["filters_file"]
+filter_files        = configs["filter"]
+
+z_range     = configs["z_range"]
+z           = np.arange( z_range[0], z_range[1], z_range[2] )
+
+w_range     = configs["w_range"]
+w           = np.arange( w_range[0], w_range[1], w_range[2] )
+
+##  ============================================================================
+##  preperation & interpolation
+
+##  Create the arrays for the seds, filters and magnitudes.
+
+seds_dtype      = { "names": ["wavelength"], "formats": ["float64"] }
+filters_dtype   = { "names": ["wavelength"], "formats": ["float64"] }
+mags_dtype      = { "names": ["z"], "formats": ["float64"] }
+
+for i in range( len(sed_files) ):
+    name    = io.parse_path( sed_files[i] )[1]
+    seds_dtype["names"].append( name )
+    seds_dtype["formats"].append( "float64" )
+
+for i in range( len(filter_files) ):
+    name    = io.parse_path( filter_files[i] )[1]
+    filters_dtype["formats"].append( "float64" )
+    filters_dtype["names"].append( name )
+    mags_dtype["names"].append( name )
+    mags_dtype["formats"].append( "float64" )
+
+seds                    = np.zeros( w.size, dtype=seds_dtype )
+seds["wavelength"]      = w
+filters                 = np.zeros( w.size, dtype=filters_dtype )
+filters["wavelength"]   = w
+mags                    = np.zeros( z.size, dtype=mags_dtype )
+mags["z"]               = z
+
+##  Interpolate the seds and filters onto the same grid.
+
+print( "Interpolating all SEDs and filters onto the wavelength grid." )
+
+for i in range( len(sed_files) ):
+    name            = io.parse_path( sed_files[i] )[1]
+    print( "   ", name )
+    sed             = io.read( sed_files[i] )
+    seds[name]      = maths.interpolate( w, sed["wavelength"], sed["flux"] )
+
+for i in range( len(filter_files) ):
+    name            = io.parse_path( filter_files[i] )[1]
+    print( "   ", name )
+    filt            = io.read( filter_files[i] )
+    filters[name]   = maths.interpolate( w, filters["wavelength"], filters["flux"] )
+
+##  Write files.
+
+outs    = (sed_out_file, filters_out_file)
+print( "    ...writing SEDs to %s and filters to %s." % (outs[1], outs[2]) )
+
+io.write( sed_out_file, seds )
+io.write( filters_out_file, filters )
+
+##  ============================================================================
+##  mock photometry
+
+##  Perform mock photometry.
+
+for i in range( len(sed_files) ):
+
+    sed         = io.parse_path( sed_files[i] )[1]
+    sed_mags    = np.copy( mags )
+    out_file    = sed + ".mock"
+
+    print( "Calculating mock magnitudes for %s..." % sed )
+
+    for j in range( len(filter_files) ):
+
+        filt    = io.parse_path( filter_files[i] )[1]
+
+        for k in range( z.size ):
+
+            sed_w   = w * ( 1 + z[k] )
+            flux    = maths.integrate( sed_w, seds[sed], filters[filt] )
+            sed_mags[k][filt]   = 30.0 - 2.5 * np.log10( flux )
+
+    io.write( out_file, sed_mags )

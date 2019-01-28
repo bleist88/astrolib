@@ -3,15 +3,14 @@ This contains the function mcc.create() which creates a new FITS Cube from
 the configurations files.
 """
 
-from   .__imports__ import *
+from ._imports import *
 
 ##  ============================================================================
 
-def create( mcc_file, configs_file, path="." ):
+def create( fits_file, configs_file, path="." ):
 
-    Timer   = io.Timer("MCC  -  Master Catalog Correlation")
-
-    Timer.start("MCC")
+    timer   = io.timer("mcc  -  master catalog correlation")
+    timer.start("mcc")
 
     ##  Read in the configuration files.
     ##  Set file path variables.
@@ -20,11 +19,11 @@ def create( mcc_file, configs_file, path="." ):
 
     ##  Initialize the master catalog object.
 
-    if os.path.isfile( mcc_file ):
-        FM  = mcc.master( mcc_file )
+    if os.path.isfile( fits_file ):
+        FM  = mcc.master( fits_file, init=False )
 
     else:
-        FM  = mcc.master( mcc_file, init=True )
+        FM  = mcc.master( fits_file, init=True )
 
     ## Loop through all catalog configurations and add them to the Cube.
 
@@ -36,7 +35,7 @@ def create( mcc_file, configs_file, path="." ):
 
         name        = configs[i]["name"]
         cat_file    = os.path.join( path, configs[i]["catalog"] )
-        Rc          = configs[i]["Rc"] / 3600
+        Rc          = configs[i]["Rc"]
         append      = configs[i]["append"]
 
         if append.lower() == "true":
@@ -45,7 +44,7 @@ def create( mcc_file, configs_file, path="." ):
             append  = False
 
         ##  This is  currently not needed now that image_managers are use.
-        ##
+        ##  Add images to the header.
         # images      = []
         # for j in range( len(configs) ):
         #     if configs[j]["name"] == configs[i]["name"]:
@@ -53,23 +52,24 @@ def create( mcc_file, configs_file, path="." ):
 
         ##   Make sure the catalog is not already added.
 
-        if name in FM.list:
+        if name in FM.catalogs:
             continue
 
         ##  Correlate and add catalog to the Master Catalog.
 
-        Timer.start(
+        timer.start(
             "correlation",
             alert="\nAdding %s to the Master Catalog..." % name
         )
 
         catalog = io.read( cat_file )
-        FM.add_catalog( name, catalog, Rc, append=append )
+        FM.correlate( name, catalog, Rc, append=append )
+        FM.save( FM.fits_file, overwrite=True )
 
-        Timer.end("correlation")
+        timer.end("correlation")
 
     print(
-        "\nThe Master Catalog '%s' has been successfully created." % mcc_file
+        "\nThe Master Catalog '%s' has been successfully created." % fits_file
     )
 
-    Timer.end("MCC")
+    timer.end("mcc")

@@ -4,16 +4,11 @@ of an ascii catalog by plotting histograms of column data and allows for cutting
 data away.
 """
 
-from    __future__      import absolute_import
-from    __future__      import division
-from    __future__      import print_function
-from    __future__      import unicode_literals
-
-from    .__imports__    import *
+from ._imports import *
 
 ##  ========================================================================  ##
 
-class Catter:
+class catter:
     """
     A class to view catalog data.  This class plots histograms of selected
     arrays within a catalog as well as modifies the data.
