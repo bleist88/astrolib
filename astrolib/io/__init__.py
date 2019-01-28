@@ -1,12 +1,10 @@
-"""
-A package for reading and writing data to and from file.
-"""
 
-from    .file_parsing   import *
-from    .cl_parsing     import *
-from    .formatting     import *
-from    .data_io        import *
-from    .class_io       import *
-from    .catter         import *
-from    .figure         import *
-from    .display        import *
+from .file_parsing  import parse_file, get_body, get_comments, get_dtype,
+                            get_configs, parse_path
+from .cl_parsing    import cl_parser
+from .formatting    import get_dstring, tobool
+from .data_io       import read, write, start_file, write_to, write_configs,
+                            add_columns
+from .class_io      import save_obj, open_obj
+from .figure        import smart_figure
+from .display       import progress, timer

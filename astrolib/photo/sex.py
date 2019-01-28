@@ -121,7 +121,8 @@ def batch_sex( sex_file, bsex_file, detection=None, command="sex" ):
         sex_file    = None  ##  I need to get this from what was written by
                             ##  write_sex().
 
-        sex( sex_config["fits_image"], sex_file, detection=detection, command=command )
+        sex( sex_config["fits_image"], sex_file, detection=detection,
+            command=command )
 
 ##  ============================================================================
 

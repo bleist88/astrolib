@@ -1,77 +1,148 @@
+"""
+This file houses the image manager.
+"""
 
 from ._imports import *
 
-##  ========================================================================  ##
+##  ============================================================================
 
-def find_best_frame( fits_file, alpha, delta ):
+types_dict  = {
+    "sci": [], "bkg": [], "wht": [], "var": [], "rms": [], "unc": []
+}
+
+##  ============================================================================
+
+class image:
     """
-    This function returns the frame number for which the "alpha" and "delta"
-    provided are closest to the center.
-
-    Returns:
-        frame:              int32       - best frame
-
-    Parameters:
-        fits_list:          [string]    -   images to search through
-        alpha:              float       -   sky coordinate 1
-        delta:              float       -   sky coordinate 2
+    This class is used to house FITS images.
     """
 
-    ##  Open a fits cube of image objects.
+    def __init__( self, file_name, ext=None ):
 
-    images  = photo.cube( fits_file, type="sci" )
+        self.file_name  = file_name     ##  file name
 
-    ##  For each photo.image, create an array of distances between.
+        self.data       = None          ##  image array (tuple if multi==True)
+        self.header     = None          ##  header dict (tuple if multi==True)
 
-    distances   = np.zeros( (len(alpha), len(images)) )
-    im_frames   = [ im.frame for im in images ]
+        self.telescope  = None          ##  telescope
+        self.instrument = None          ##  instrument
+        self.filter     = None          ##  filter
+        self.author     = None          ##  author
+        self.type       = None          ##  sci, wht, var, unc, rms, bkg
+        self.frame      = None          ##  1, 2, 3, ..., N
+        self.ext        = None          ##  extension index
+        self.ext_name   = None          ##  extension name
 
-    for i in range( len(images) ):
-        distances[:,i]  = np.sqrt(
-            (alpha - images[i].alpha_c)**2 + (delta - images[i].delta_c)**2
-        )
+        self.date       = None          ##  date [day-month-year]
+        self.time       = None          ##  time [hour:min:sec]
+        self.julian     = None          ##  julian time
 
-    ##  Create frames array.
+        self.wcs        = None          ##  astropy.wcs.WCS object
+        self.shape      = None          ##  array shape
+        self.x_c        = None          ##  center pixel x
+        self.y_c        = None          ##  center pixel y
+        self.alpha_c    = None          ##  center pixel ra
+        self.delta_c    = None          ##  center pixel dec
+        self.theta      = None          ##  orientation in radians
 
-    frames = np.zeros( len(alpha), dtype="int32" )
+        self.pix_scale  = None          ##  pixel scale
+        self.seeing     = None          ##  seeing resolution
+        self.exp_time   = None          ##  exposure time [s]
+        self.gain       = None          ##  gain [e-/adu]
+        self.mag_0      = None          ##  magnitude zeropoint (AB)
+        self.mag_0_err  = None          ##  magnitude zeropoint error
 
-    for i in range( frames.size ):
+        ##  Initialize.
 
-        io.progress( i, frames.size, alert="Finding best frames." )
+        self.open( file_name, ext=ext )
 
-        frames[i]   = im_frames[
-            int( np.where( distances[i] == np.min(distances[i]) )[0] )
-        ]
+    ##  ========================================================================
 
-    return  frames
+    def open( self, file_name, ext=None ):
+        """
+        Instantiates the object from a FITS file or FITS cube.
+        """
 
-    # ##  Create a dictionary of distances to the center.
-    #
-    # frame       = None
-    # distance    = None
-    #
-    # ##  Iterate through the cube extensions.  Look through only "sci" types.
-    # ##  Retrieve the center pixel value and find the distance to the given.
-    #
-    # for i in range( len(fits_cube) ):
-    #
-    #     if fits_cube[i].header["type"] != "sci":
-    #         continue
-    #
-    #     alpha_c = fits_cube[i].header["CRVAL1"]
-    #     delta_c = fits_cube[i].header["CRVAL2"]
-    #
-    #     D   = np.sqrt( (alpha - alpha_c)**2 + (delta - delta_c)**2 )
-    #
-    #     if frame is None:
-    #         frame       = fits_cube[i].header["frame"]
-    #         distance    = D
-    #     elif D < distance:
-    #         frame       = fits_cube[i].header["frame"]
-    #         distance    = D
-    #
-    # return  frame
+        self.file_name      = file_name
+        self.ext            = ext
 
+        ##  Get data and header.
+
+        if ext is None:
+            self.data       = fits.getdata( file_name )
+            self.header     = fits.getheader( file_name )
+
+        elif ext is not None:
+            self.data       = fits.getdata( file_name, ext )
+            self.header     = fits.getheader( file_name, ext )
+
+        ##  Get metadata from the header.
+
+        self.telescope  = self.header["telescope"]
+        self.instrument = self.header["instrument"]
+        self.filter     = self.header["filter"]
+        self.author     = self.header["author"]
+        self.type       = self.header["type"]
+        self.frame      = self.header["frame"]
+        self.ext_name   = self.header["extname"]
+
+        self.date       = self.header["date"]
+        self.time       = self.header["time"]
+
+        self.wcs        = WCS( self.header )
+        self.shape      = np.shape( self.data )
+        self.x_c        = self.wcs.to_header()["CRPIX1"]
+        self.y_c        = self.wcs.to_header()["CRPIX2"]
+        self.alpha_c    = self.wcs.to_header()["CRVAL1"]
+        self.delta_c    = self.wcs.to_header()["CRVAL2"]
+        self.theta      = None
+
+        self.pix_scale  = self.header["pix_scale"]
+        self.seeing     = self.header["seeing"]
+        self.exp_time   = self.header["exp_time"]
+        self.gain       = self.header["gain"]
+        self.mag_0      = self.header["mag_0"]
+        self.mag_0_err  = self.header["mag_0_err"]
+
+    ##  ========================================================================
+
+    def display( self ):
+
+        longest = 0
+        for key in self.__dict__:
+            if len( key ) > longest:
+                longest = len( key )
+
+        for key in self.__dict__:
+            if key == "data" or key == "header" or key=="wcs":
+                continue
+            print( key, " "*(longest + 3 - len(key)), self.__dict__[key] )
+
+##  ============================================================================
+##  ============================================================================
+
+def cube( file_name, type=None ):
+    """
+    This function puts FITS cubes into a list of photo.image objects.
+    """
+
+    images  = []
+
+    for i in range( len(fits.open(file_name)) ):
+
+        im  = photo.image(file_name, i)
+
+        if type is not None:
+            if im.type == type:
+                images.append( im )
+            else:
+                continue
+        else:
+            images.append( im )
+
+    return  images
+
+##  ============================================================================
 ##  ============================================================================
 
 def rescale( data, sigma=3, epsilon=.03, iters=20 ):
@@ -93,52 +164,41 @@ def rescale( data, sigma=3, epsilon=.03, iters=20 ):
 
     return data
 
-##  ============================================================================
-
-##  This was previously used in the find_fits() function which is now the
-##  find_best_frame() function.
-
-## Iterate through list of images and store candidate images in which the
-## pixel value located at the given sky position is a reasonable value.
+# ##  ========================================================================
 #
-# for i in range(len( fits_list )):
+# def find_best_frame( alpha, delta ):
+#     """
+#     For a list of coordinates (deg), return a list of the best frame in
+#     which the coordinates are closest to the center.
 #
-#     ## Get image data and wcs info.
+#     Arguments:
+#         alpha   - sky coordinate 1
+#         delta   - sky coordinate 2
 #
-#     data        = fits.getdata( fits_list[i] )
-#     header      = fits.getheader( fits_list[i] )
-#     image_wcs   = WCS( header )
+#     Returns:
+#         frames  - list of best frames
+#     """
 #
-#     ## Find pixel location of sky position.
-#     print(alpha, delta)
-#     position    = np.array([[ alpha, delta ]])
+#     ##  For each photo.image, create an array of distances between.
 #
-#     x           = image_wcs.wcs_world2pix( position, 1 )[0][1]
-#     y           = image_wcs.wcs_world2pix( position, 1 )[0][0]
+#     distances   = np.zeros( (len(alpha), len(images)) )
+#     im_frames   = [ im.frame for im in images ]
 #
-#     ## Determine the validity of the pixel location and value.
-#     ## The location of the pixel must be within the shape of the image.
-#     ## The value of the pixel must not be zero or nan.
+#     for i in range( len(images) ):
+#         distances[:,i]  = np.sqrt(
+#             (alpha - images[i].alpha_c)**2 + (delta - images[i].delta_c)**2
+#         )
 #
-#     if x > 0 and y > 0 and x < data.shape[0] and y < data.shape[1]:
+#     ##  Create frames array.
 #
-#         if data[ x,y ] != 0.0 and not np.isnan( data[ x,y ] ):
+#     frames = np.zeros( len(alpha), dtype="int32" )
 #
-#             ## Calculate the separation between the sky position pixel and
-#             ## the image center pixel.  If no image had been previously
-#             ## stored, record this info.  If a previous image had been
-#             ## recorded but this new separation is better, record this info.
+#     for i in range( frames.size ):
 #
-#             sep =  ( data.shape[0]/2 - x )**2 + ( data.shape[1]/2 - x )**2
+#         io.progress( i, frames.size, alert="Finding best frames." )
 #
-#             if image is None:
+#         frames[i]   = im_frames[
+#             int( np.where( distances[i] == np.min(distances[i]) )[0] )
+#         ]
 #
-#                 image       = fits_list[i]
-#                 image_sep   = sep
-#
-#             elif image is not None and sep < image_sep:
-#
-#                 image       = fits_list[i]
-#                 image_sep   = sep
-#
-# return image
+#     return  frames
