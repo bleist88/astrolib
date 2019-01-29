@@ -40,7 +40,7 @@ def sex( fits_file, sex_file, ext=0, detection=None, command='sex' ):
 
 ##  ============================================================================
 
-def write_sex( im_file, bsex_file, sex_file ):
+def write_sex( fits_file, bsex_file, sex_file ):
     """
     This function reads in a .bsex file to write a .sex file for an image with
     details provided by the image manager.
@@ -48,7 +48,7 @@ def write_sex( im_file, bsex_file, sex_file ):
 
     ##  Read in both .bsex and .sex files.
 
-    image           = photo.image( im_file )
+    image           = photo.cube( fits_file )
     sex_configs     = io.get_configs( bsex_file )
 
     ##  Handle file names.
