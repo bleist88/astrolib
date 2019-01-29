@@ -15,7 +15,7 @@ var_changes     = { ##  keyname change replacements
 
 ##  ============================================================================
 
-def sex( fits_file, sex_file, detection=None, command='sex' ):
+def sex( fits_file, sex_file, ext=0, detection=None, command='sex' ):
     """
     This function performs a SExtractor run on the .fits file using parameters
     from the .sex file.

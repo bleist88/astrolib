@@ -121,7 +121,7 @@ def get_configs( configs_file ):
     """
 
     body    = get_body( configs_file )
-    configs = {}
+    configs = collections.ordereddict()
 
     ##  Create a key for each variable in the configs file.
     ##  Any repeated variables are lists.
