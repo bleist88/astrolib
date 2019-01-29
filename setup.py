@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name                = "astrolib",
-    version             = "6.283",
+    version             = "2.0",
     description         = "a library of astronomy related packages",
     long_description    = open("README.md").read(),
     author              = "Brian Leist",
