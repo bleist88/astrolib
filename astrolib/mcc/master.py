@@ -290,35 +290,6 @@ class master:
         self.master["S"]       /= (self.master["matches"] - 1)
         self.fits_cube[1].data  = self.master
 
-    # def find_neighbors( self ):
-    #     """
-    #     For all objects in the master catalog, find the nearest neighbor and
-    #     the radial distance (sit back, this may take a while).
-    #     """
-    #
-    #     master  = self.master
-    #
-    #     for i in range( master.size ):
-    #
-    #         io.progress( i, master.size )
-    #
-    #         other   = np.where( master["id"] != master[i]["id"] )[0]
-    #
-    #         R       = np.sqrt(
-    #             (master[i]["alpha"] - master[other]["alpha"])**2 +
-    #             (master[i]["delta"] - master[other]["delta"])**2
-    #         )
-    #
-    #         r       = np.min( R )
-    #
-    #         j       = other[ np.where( R == r )[0] ][0]
-    #
-    #         master[i]["n"]  = master[j]["id"]
-    #         master[i]["Rn"] = np.sqrt(
-    #             (master[i]["alpha"] - master[j]["alpha"])**2 +
-    #             (master[i]["delta"] - master[j]["delta"])**2
-    #         )
-
     def correlate( self, cat_name, catalog, Rc, append=True ):
         """
         Correlates all objects from the new catalog to the existing master
@@ -378,7 +349,7 @@ class master:
 
     ##  ========================================================================
 
-    def set_frames( self, cat_name, image_file ):
+    def set_frames( self, cat_name, fits_file ):
         """
         This function determines, for those objects which have -99 values for
         alpha, whether or not the position of the object is not covered by the
@@ -401,7 +372,7 @@ class master:
 
         ##  Open the image cube.
 
-        cube    = photo.cube( image_file, type="sci" )
+        cube    = photo.cube( fits_file, type="sci" )
 
         for i in range(len(cube)):
             cube[i].data[ np.where(cube[i].data == 0.0) ]   = np.nan
@@ -413,7 +384,7 @@ class master:
         ##  Find the best frame for all objects in the master catalog.
 
         catalog["frame"]    = photo.find_best_frame(
-            image_file, self.master["alpha"], self.master["delta"]
+            fits_file, self.master["alpha"], self.master["delta"]
         )
 
         ##  For each frame, look for all objects closest to this frame.
@@ -422,7 +393,7 @@ class master:
 
             io.progress(
                 i, len(cube),
-                alert="Testing coverage in each frame in %s." % image_file
+                alert="Testing coverage in each frame in %s." % fits_file
             )
 
             nots    = np.where(
@@ -436,21 +407,6 @@ class master:
                 stamps[i].set_target(
                     self.master["alpha"][n], self.master["delta"][n]
                 )
-
-                ##  Try plotting.
-
-                # fig = pyplot.figure()
-                # ax  = fig.add_subplot(111)
-                #
-                # ##  Look for bad values.
-                #
-                # if not np.isfinite( np.sum(stamps[i].data) ):
-                #     if True in np.isnan( stamps[i].data ):
-                #         catalog["frame"][n] = -1
-                #         print( stamps[i].data )
-                #         stamps[i].plot_stamp( ax )
-                #         pyplot.savefig( "Coverage/" + cat_name + ".png" )
-                #         pyplot.close()
 
                 bad = 0
                 for k in range( stamps[i].data.shape[0] ):
@@ -466,95 +422,3 @@ class master:
         self.catalogs[ cat_name ]   = catalog
 
         self.save( self.file_name, overwrite=True )
-
-        ##  Testing this.
-        #
-        #a   = np.where( catalog["frame"] < 0 )[0]   ##  rx
-        #b   = np.where(
-        #    (catalog["alpha"] < 0) & (catalog["frame"] >= 0)
-        #)[0]   ##  yx
-        #
-        #pyplot.plot( self.master["alpha"], self.master["delta"], "kx", ms=0.3 )
-        #pyplot.plot(
-        #    self.master["alpha"][a], self.master["delta"][a], "rx", ms=0.1
-        #)
-        #pyplot.plot(
-        #    self.master["alpha"][b], self.master["delta"][b], "yx", ms=0.2
-        #)
-        #pyplot.show()
-
-        # ##  Loop through all extensions and for those which are associated with
-        # ##  a set of images, test for coverage in the field of view in image.
-        # master      = self.master
-        # catalog     = self.catalogs[ cat ]
-        # images      = self.images[ cat ]
-        #
-        # ##  Place the directory in each file name.
-        #
-        # if data_dir is not None:
-        #     for i in range( len(images) ):
-        #         images[i]   = os.path.join( data_dir, images[i] )
-        #
-        # ## Set any unique objects which are not located within an
-        # ## image equal to -88 for non-detection but covered.
-        #
-        # for im_file in images:
-        #
-        #     print( 'Checking object coverage in %s...' % im_file )
-        #
-        #     data    = fits.getdata( im_file )
-        #     header  = fits.getheader( im_file )
-        #     world   = WCS( header )
-        #
-        #     ## Find pixel coordinates of non_detected unique objects.
-        #     ## Start by assuming all non_dets are out_fields.
-        #
-        #     non_dets    = np.where( catalog["alpha"] < 0 )[0]
-        #
-        #     ## Determine validity of pixel coordinates.
-        #     ## Criteria:
-        #     ##      1.  Inside of valid pixel ranges.
-        #     ##      2.  Pixel value is not 0.0 or NAN.
-        #
-        #     if non_dets.size > 0:
-        #
-        #         y, x        = world.wcs_world2pix(
-        #             master[ non_dets ][ "alpha" ],
-        #             master[ non_dets ][ "delta" ],
-        #             1
-        #         )
-        #
-        #         y, x        = y.astype('int'), x.astype('int')
-        #
-        #         in_pix      = non_dets[
-        #             np.where(
-        #                 ( x > 0 )               &
-        #                 ( x < data.shape[0] )   &
-        #                 ( y > 0 )               &
-        #                 ( y < data.shape[1] )
-        #             )[0]
-        #         ]
-        #
-        #         if in_pix.size > 0:
-        #
-        #             y, x        = world.wcs_world2pix(
-        #                 master[ in_pix ][ "alpha" ],
-        #                 master[ in_pix ][ "delta" ],
-        #                 1
-        #             )
-        #
-        #             y, x        = y.astype('int'), x.astype('int')
-        #
-        #             in_fields   = in_pix[
-        #                 np.where(
-        #                     ( data[x,y] != 0.0 )            &
-        #                     ( np.isfinite(data[x,y]) )
-        #                 )[0]
-        #             ]
-        #
-        #             for i in in_fields:
-        #                 catalog[i].fill( -88 )
-        #
-        # ##  Update the catalog.
-        #
-        # self.catalogs[ cat ]    = catalog

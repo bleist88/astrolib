@@ -1,14 +1,16 @@
 """
 This file houses the image manager.
+
+Image Types:
+    sci     - science image
+    bkg     - background image
+    wht     - weight image
+    var     - variance image
+    rms     - root mean square image
+    unc     - uncertainty image
 """
 
 from ._imports import *
-
-##  ============================================================================
-
-types_dict  = {
-    "sci": [], "bkg": [], "wht": [], "var": [], "rms": [], "unc": []
-}
 
 ##  ============================================================================
 
@@ -143,7 +145,6 @@ def cube( file_name, type=None ):
     return  images
 
 ##  ============================================================================
-##  ============================================================================
 
 def rescale( data, sigma=3, epsilon=.03, iters=20 ):
 
@@ -164,41 +165,46 @@ def rescale( data, sigma=3, epsilon=.03, iters=20 ):
 
     return data
 
-# ##  ========================================================================
-#
-# def find_best_frame( alpha, delta ):
-#     """
-#     For a list of coordinates (deg), return a list of the best frame in
-#     which the coordinates are closest to the center.
-#
-#     Arguments:
-#         alpha   - sky coordinate 1
-#         delta   - sky coordinate 2
-#
-#     Returns:
-#         frames  - list of best frames
-#     """
-#
-#     ##  For each photo.image, create an array of distances between.
-#
-#     distances   = np.zeros( (len(alpha), len(images)) )
-#     im_frames   = [ im.frame for im in images ]
-#
-#     for i in range( len(images) ):
-#         distances[:,i]  = np.sqrt(
-#             (alpha - images[i].alpha_c)**2 + (delta - images[i].delta_c)**2
-#         )
-#
-#     ##  Create frames array.
-#
-#     frames = np.zeros( len(alpha), dtype="int32" )
-#
-#     for i in range( frames.size ):
-#
-#         io.progress( i, frames.size, alert="Finding best frames." )
-#
-#         frames[i]   = im_frames[
-#             int( np.where( distances[i] == np.min(distances[i]) )[0] )
-#         ]
-#
-#     return  frames
+##  ============================================================================
+
+def find_frames( fits_file, alpha, delta ):
+    """
+    For a list of coordinates (deg), return a list of the best frame in
+    which the coordinates are closest to the center.
+
+    Arguments:
+        cube    - a list of image objects
+        alpha   - sky coordinate 1
+        delta   - sky coordinate 2
+
+    Returns:
+        frames  - list of best frames
+    """
+
+    ##  Open the fits cube.
+
+    images  = cube( fits_file )
+
+    ##  For each photo.image, create an array of distances between.
+
+    distances   = np.zeros( (len(alpha), len(images)) )
+    im_frames   = [ im.frame for im in images ]
+
+    for i in range( len(images) ):
+        distances[:,i]  = np.sqrt(
+            (alpha - images[i].alpha_c)**2 + (delta - images[i].delta_c)**2
+        )
+
+    ##  Create frames array.
+
+    frames = np.zeros( len(alpha), dtype="int32" )
+
+    for i in range( frames.size ):
+
+        io.progress( i, frames.size, alert="Finding best frames." )
+
+        frames[i]   = im_frames[
+            int( np.where( distances[i] == np.min(distances[i]) )[0] )
+        ]
+
+    return  frames
