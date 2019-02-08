@@ -92,6 +92,8 @@ def parse_file( file_name ):
 
     return body, comments, dtype
 
+##  ========================================================================  ##
+
 def get_body( file_name ):
     """
     This function uses parse_file() to retrieve the body from a file.
@@ -122,23 +124,6 @@ def parse_path( full_path ):
     """
 
     path, file_name     = os.path.split( full_path )
-    name, ext           = os.path.splitext( file_name )   ##  the old way
-
-    ##  An alternate way to find name, ext.
-    ##
-    # i, j    = 0, None
-    #
-    # while j is None and i < len(file_name):
-    #     if file_name[i] == ".":
-    #         j = i
-    #     else:
-    #         i += 1
-    #
-    # if j is not None:
-    #     name    = file_name[:j]
-    #     ext     = file_name[j:]
-    # else:
-    #     name    = file_name
-    #     ext     = ""
+    name, ext           = os.path.splitext( file_name )
 
     return path, name, ext

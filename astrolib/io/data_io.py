@@ -11,7 +11,7 @@ like:
     1       3.14159         2.71828         Feynman
     2       2.71828         3.14159         Jefferson
     ##  Here is another comment randomly in the file.
-    3       3.13159         2.71828         Beethoven
+    3       3.14159         2.71828         Beethoven
 """
 
 from ._imports import *
@@ -262,8 +262,8 @@ def read_configs( configs_file ):
     Returns a dictionary of variables defined in a .cfg file.
     """
 
-    body    = get_body( configs_file )
-    configs = collections.OrderedDict()
+    body    = io.get_body( configs_file )
+    configs = {} ##collections.OrderedDict()
 
     ##  Create a key for each variable in the configs file.
     ##  Any repeated variables are lists.
