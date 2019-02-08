@@ -10,7 +10,7 @@ body, comments, and dtype.  The typical text file might look something like:
     1       3.14159         2.71828         Feynman
     2       2.71828         3.14159         Jefferson
     ##  Here is another comment randomly in the file.
-    3       3.13159         2.71828         Beethoven
+    3       3.14159         2.71828         Beethoven
 """
 
 from ._imports import *
@@ -112,93 +112,6 @@ def get_dtype( file_name ):
     """
 
     return parse_file( file_name )[2]
-
-##  ========================================================================  ##
-
-def get_configs( configs_file ):
-    """
-    Returns a dictionary of variables defined in a .cfg file.
-    """
-
-    body    = get_body( configs_file )
-    configs = collections.OrderedDict()
-
-    ##  Create a key for each variable in the configs file.
-    ##  Any repeated variables are lists.
-
-    for i in range( len(body) ):
-
-        var = body[i][0]
-
-        if var not in configs:
-            configs[ var ]  = None
-        else:
-            configs[ var ]  = []
-
-    ##  Find all variable names.  These are the leftmost value.
-    ##  All values are the remaining values.
-    ##  Multi-valued values are designated with ",".
-
-    for i in range( len(body) ):
-
-        var     = body[i][0]
-        multi   = False
-
-        ##  If multi-valued, split into a list.
-
-        for j in range( len(body[i][1:]) ):
-            if "," in body[i][j]:
-                multi   = True
-
-        if multi is True:
-            value   = " ".join( body[i][1:] )
-            value   = value.replace( " ", "" ).split( "," )
-
-        else:
-            value   = body[i][1]
-
-        ## Type set values.
-
-        if isinstance( value, list ):
-
-            for j in range( len(value) ):
-
-                if value[j].lower() in ["t","true","f","false"]:
-                    value[j]    = bool( value[j] )
-                elif value[j].lower() in ["none"]:
-                    value[j]    = None
-
-                else:
-                    try:
-                        value[j]    = float( value[j] )
-                        if value[j] % 1 == 0:
-                            value[j]    = int( value[j] )
-                    except:
-                        value[j]    = str( value[j] )
-
-        else:
-
-            if value.lower() in ["t","true","f","false"]:
-                value    = bool( value )
-            elif value.lower() in ["none"]:
-                value    = None
-            else:
-                try:
-                    value    = float( value )
-                    if value % 1 == 0:
-                        value    = int( value )
-                except:
-                    value   = str( value )
-
-        ## Finally add the variable and value to the dictionary.
-
-        if configs[ var ] is None:
-            configs[ var ] = value
-
-        else:
-            configs[ var ].append( value )
-
-    return configs
 
 ##  ========================================================================  ##
 

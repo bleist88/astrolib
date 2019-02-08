@@ -16,9 +16,7 @@ conda_install:
 ##	============================================================================
 ##	Updating.
 
-update_all:
-	update_git;
-	update_conda;
+update:	update_git update_conda;
 
 update_git:
 	git add -A;

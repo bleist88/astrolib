@@ -28,7 +28,7 @@ configs_file    = cl_parser.get_flag( "-c", default="mock.cfg" )
 
 ##  Read in the configs.
 
-configs             = io.get_configs( configs_file )
+configs             = io.read_configs( configs_file )
 
 seds_out_file       = configs["seds_file"]
 sed_files           = configs["sed"]

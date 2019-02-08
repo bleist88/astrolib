@@ -49,7 +49,7 @@ def write_sex( fits_file, bsex_file, sex_file ):
     ##  Read in both .bsex and .sex files.
 
     image           = photo.cube( fits_file )
-    sex_configs     = io.get_configs( bsex_file )
+    sex_configs     = io.read_configs( bsex_file )
 
     ##  Handle file names.
 
@@ -135,7 +135,7 @@ def batch_sex( sex_file, bsex_file, detection=None, command="sex" ):
 #         print("Currently this action only supports having a default .sex.")
 #
 #     else:
-#         sex_configs     = io.get_configs( default )
+#         sex_configs     = io.read_configs( default )
 #
 #     ##  Handle output file names.
 #

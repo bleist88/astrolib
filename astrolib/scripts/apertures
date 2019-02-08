@@ -36,7 +36,7 @@ configs_file    = cl_parser.get_flag( "-c", default="apertures.cfg" )
 
 print( "Using configs from %s..." % configs_file )
 
-configs         = io.get_configs( configs_file )
+configs         = io.read_configs( configs_file )
 
 source_file     = configs["source_file"]
 unit            = configs["unit"]

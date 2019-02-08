@@ -17,6 +17,7 @@ like:
 from ._imports import *
 
 ##  ========================================================================  ##
+##  Column Data
 
 def read( file_name, dtype=None ):
     """
@@ -153,64 +154,6 @@ def write(
 
 ##  ========================================================================  ##
 
-def start_file( file_name, array ):
-
-    out_file    = open( file_name, "w" )
-
-    for name in list( array.dtype.names ):
-
-        out_file.write( "#<  " + name )
-        out_file.write( (25-len(name)) * " " )
-        out_file.write( str(array.dtype[name]) )
-        out_file.write( "\n" )
-
-def write_to( out_file, dstring, row_data ):
-
-    out_file.write( dstring % tuple(row_data) )
-    out_file.write( "\n" )
-    out_file.flush()
-
-##  ========================================================================  ##
-
-def write_configs( file_name, configs, comment=None ):
-    """
-    Write a configurations file from a configurations dictionary.
-    """
-
-    ##  Open file and write comment.
-
-    out_file    = open( file_name, "w" )
-
-    if comment is not None:
-        out_file.write( "##  " + comment + "\n\n" )
-
-    else:
-        out_file.write( "\n\n" )
-
-    ##  Create value strings from values.
-
-    for key in configs:
-
-        if isinstance( configs[key], (list, tuple) ):
-
-            vals  = []
-
-            for val in configs[key]:
-                vals.append( str(val) )
-
-            configs[key]    = ", ".join( vals )
-
-    ##  Write configs to file.
-
-    for key in configs:
-
-        out_file.write( "%-28s  %s\n" % (key, configs[key]) )
-
-    out_file.write("")
-    out_file.close()
-
-##  ========================================================================  ##
-
 def add_column( original, col_name, col_format, data=None, after=None ):
     """
     This function adds a column to an existing numpy record array and returns
@@ -291,7 +234,154 @@ def add_column( original, col_name, col_format, data=None, after=None ):
 
     return new_array
 
-##  ============================================================================
+##  ========================================================================  ##
+
+def start_file( file_name, array ):
+
+    out_file    = open( file_name, "w" )
+
+    for name in list( array.dtype.names ):
+
+        out_file.write( "#<  " + name )
+        out_file.write( (25-len(name)) * " " )
+        out_file.write( str(array.dtype[name]) )
+        out_file.write( "\n" )
+
+def write_to( out_file, dstring, row_data ):
+
+    out_file.write( dstring % tuple(row_data) )
+    out_file.write( "\n" )
+    out_file.flush()
+
+##  ========================================================================  ##
+##  ========================================================================  ##
+##  Configuration Files
+
+def read_configs( configs_file ):
+    """
+    Returns a dictionary of variables defined in a .cfg file.
+    """
+
+    body    = get_body( configs_file )
+    configs = collections.OrderedDict()
+
+    ##  Create a key for each variable in the configs file.
+    ##  Any repeated variables are lists.
+
+    for i in range( len(body) ):
+
+        var = body[i][0]
+
+        if var not in configs:
+            configs[ var ]  = None
+        else:
+            configs[ var ]  = []
+
+    ##  Find all variable names.  These are the leftmost value.
+    ##  All values are the remaining values.
+    ##  Multi-valued values are designated with ",".
+
+    for i in range( len(body) ):
+
+        var     = body[i][0]
+        multi   = False
+
+        ##  If multi-valued, split into a list.
+
+        for j in range( len(body[i][1:]) ):
+            if "," in body[i][j]:
+                multi   = True
+
+        if multi is True:
+            value   = " ".join( body[i][1:] )
+            value   = value.replace( " ", "" ).split( "," )
+
+        else:
+            value   = body[i][1]
+
+        ## Type set values.
+
+        if isinstance( value, list ):
+
+            for j in range( len(value) ):
+
+                if value[j].lower() in ["t","true","f","false"]:
+                    value[j]    = bool( value[j] )
+                elif value[j].lower() in ["none"]:
+                    value[j]    = None
+
+                else:
+                    try:
+                        value[j]    = float( value[j] )
+                        if value[j] % 1 == 0:
+                            value[j]    = int( value[j] )
+                    except:
+                        value[j]    = str( value[j] )
+
+        else:
+
+            if value.lower() in ["t","true","f","false"]:
+                value    = bool( value )
+            elif value.lower() in ["none"]:
+                value    = None
+            else:
+                try:
+                    value    = float( value )
+                    if value % 1 == 0:
+                        value    = int( value )
+                except:
+                    value   = str( value )
+
+        ## Finally add the variable and value to the dictionary.
+
+        if configs[ var ] is None:
+            configs[ var ] = value
+
+        else:
+            configs[ var ].append( value )
+
+    return configs
+
+##  ========================================================================  ##
+
+def write_configs( file_name, configs, comment=None ):
+    """
+    Write a configurations file from a configurations dictionary.
+    """
+
+    ##  Open file and write comment.
+
+    out_file    = open( file_name, "w" )
+
+    if comment is not None:
+        out_file.write( "##  " + comment + "\n\n" )
+
+    else:
+        out_file.write( "\n\n" )
+
+    ##  Create value strings from values.
+
+    for key in configs:
+
+        if isinstance( configs[key], (list, tuple) ):
+
+            vals  = []
+
+            for val in configs[key]:
+                vals.append( str(val) )
+
+            configs[key]    = ", ".join( vals )
+
+    ##  Write configs to file.
+
+    for key in configs:
+
+        out_file.write( "%-28s  %s\n" % (key, configs[key]) )
+
+    out_file.write("")
+    out_file.close()
+
+##  ========================================================================  ##
 ##  numpy formats
 #
 # DATA_TYPE       DESCRIPTION
@@ -299,7 +389,8 @@ def add_column( original, col_name, col_format, data=None, after=None ):
 # S             Byte-String
 # U             Unicode Literal
 # bool_	        Boolean (True or False) stored as a byte
-# int_	        Default integer type (same as C long; normally either int64 or int32)
+# int_	        Default integer type (same as C long; normally either int64
+#                   or int32)
 # intc	        Identical to C int (normally int32 or int64)
 # intp	        Integer used for indexing
 # int8	        Byte (-128 to 127)
@@ -311,9 +402,12 @@ def add_column( original, col_name, col_format, data=None, after=None ):
 # uint32	        (0 to 4294967295)
 # uint64	        (0 to 18446744073709551615)
 # float_	        Shorthand for float64.
-# float16	        Half precision float: sign bit, 5 bits exponent, 10 bits mantissa
-# float32	        Single precision float: sign bit, 8 bits exponent, 23 bits mantissa
-# float64	        Double precision float: sign bit, 11 bits exponent, 52 bits mantissa
+# float16	        Half precision float: sign bit, 5 bits exponent, 10 bits
+#                       mantissa
+# float32	        Single precision float: sign bit, 8 bits exponent, 23 bits
+#                       mantissa
+# float64	        Double precision float: sign bit, 11 bits exponent, 52 bits
+#                           mantissa
 # complex_	    Shorthand for complex128.
 # complex64	    Complex number, represented by two 32-bit floats
 # complex128	    represented by two 64-bit floats
