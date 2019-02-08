@@ -7,10 +7,10 @@ from ._imports import *
 ##  ============================================================================
 
 var_changes     = { ##  keyname change replacements
-    "PIXEL_SCALE":      "scale",
+    "PIXEL_SCALE":      "pix_scale",
     "SEEING_FWHM":      "seeing",
     "GAIN":             "gain",
-    "MAG_ZEROPOINT":    "zero",
+    "MAG_ZEROPOINT":    "mag_0",
 }
 
 ##  ============================================================================
