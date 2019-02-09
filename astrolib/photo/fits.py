@@ -116,9 +116,12 @@ class image:
         primary_hdu = fits.PrimaryHDU( self.data )
 
         for key in self.header:
-            primary_hdu.header.set(
-                self.header[key], self.header.comments[ key ]
-            )
+            try:
+                primary_hdu.header.set(
+                    self.header[key], self.header.comments[ key ]
+                )
+            except:
+                print( "    ...could not add %s to header." % key )
 
         hdu_list    = fits.HDUList( [primary_hdu] )
 
