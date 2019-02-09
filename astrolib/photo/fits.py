@@ -19,10 +19,12 @@ class image:
     This class is used to house FITS images.
     """
 
-    def __init__( self, file_name, ext=None ):
+    def __init__( self, file_name, ext=0 ):
 
         self.file_name  = file_name     ##  file name
+        self.ext        = ext           ##  extension
 
+        self.fits       = None          ##  fits image object
         self.data       = None          ##  image array (tuple if multi==True)
         self.header     = None          ##  header dict (tuple if multi==True)
 
@@ -60,23 +62,19 @@ class image:
 
     ##  ========================================================================
 
-    def open( self, file_name, ext=None ):
+    def open( self, file_name, ext=0 ):
         """
         Instantiates the object from a FITS file or FITS cube.
         """
 
+        ##  Get data and header.
+
         self.file_name      = file_name
         self.ext            = ext
 
-        ##  Get data and header.
-
-        if ext is None:
-            self.data       = fits.getdata( file_name )
-            self.header     = fits.getheader( file_name )
-
-        elif ext is not None:
-            self.data       = fits.getdata( file_name, ext )
-            self.header     = fits.getheader( file_name, ext )
+        self.fits       = fits.open( file_name )
+        self.data       = self.fits[ext].data
+        self.header     = self.fits[ext].header
 
         ##  Get metadata from the header.
 
@@ -106,7 +104,37 @@ class image:
         self.mag_0      = self.header["mag_0"]
         self.mag_0_err  = self.header["mag_0_err"]
 
-    ##  ========================================================================
+    ##  ====================================================================  ##
+
+    def save( self, file_name=None, overwrite=False ):
+        """
+        Write fits file using the extension.
+        """
+
+        ##  Create the HDU.
+
+        primary_hdu = fits.PrimaryHDU( self.data )
+
+        for key in self.header:
+            primary_hdu.header.set(
+                self.header[key], self.header.comments[ key ]
+            )
+
+        hdu_list    = fits.HDUList( [primary_hdu] )
+
+        ##  Write to a FITS file.
+
+        if file_name is None:
+            file_name = self.file_name
+
+        if os.path.isfile( file_name ) and overwrite is not True:
+            raise   Exception(
+                "%s already exists.  Set overwrite=True" % file_name
+            )
+        else:
+            hdu_list.writeto( file_name )
+
+    ##  ====================================================================  ##
 
     def display( self ):
 
