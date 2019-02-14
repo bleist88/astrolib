@@ -118,7 +118,7 @@ class image:
         for key in self.header:
             try:
                 primary_hdu.header.set(
-                    self.header[key], self.header.comments[ key ]
+                    key, self.header[key], self.header.comments[ key ]
                 )
             except:
                 print( "    ...could not add %s to header." % key )
