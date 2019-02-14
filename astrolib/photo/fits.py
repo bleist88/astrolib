@@ -116,6 +116,8 @@ class image:
         primary_hdu = fits.PrimaryHDU( self.data )
 
         for key in self.header:
+            if key.lower() == "extname":
+                continue
             try:
                 primary_hdu.header.set(
                     key, self.header[key], self.header.comments[ key ]
