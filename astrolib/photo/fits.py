@@ -35,7 +35,6 @@ class image:
         self.type       = None          ##  sci, wht, var, unc, rms, bkg
         self.frame      = None          ##  1, 2, 3, ..., N
         self.ext        = None          ##  extension index
-        self.ext_name   = None          ##  extension name
 
         self.date       = None          ##  date [day-month-year]
         self.time       = None          ##  time [hour:min:sec]
@@ -84,7 +83,6 @@ class image:
         self.author     = self.header["author"]
         self.type       = self.header["type"]
         self.frame      = self.header["frame"]
-        self.ext_name   = self.header["extname"]
 
         self.date       = self.header["date"]
         self.time       = self.header["time"]
@@ -132,12 +130,7 @@ class image:
         if file_name is None:
             file_name = self.file_name
 
-        if os.path.isfile( file_name ) and overwrite is not True:
-            raise   Exception(
-                "%s already exists.  Set overwrite=True" % file_name
-            )
-        else:
-            hdu_list.writeto( file_name )
+        hdu_list.writeto( file_name, overwrite=False )
 
     ##  ====================================================================  ##
 

@@ -349,7 +349,7 @@ class master:
 
     ##  ========================================================================
 
-    def set_frames( self, cat_name, fits_file ):
+    def set_frames( self, cat_name, fits_list ):
         """
         This function determines, for those objects which have -99 values for
         alpha, whether or not the position of the object is not covered by the
@@ -362,24 +362,21 @@ class master:
         """
 
         ##  Grab the catalog.
+        ##  Add "frame" column if it doesn't already exist.
 
         catalog = self.catalogs[ cat_name ]
-
-        ##  Add "frame" column if it doesn't already exist.
 
         if "frame" not in catalog.dtype.names:
             catalog = io.add_column( catalog, "frame", "int64", after="id" )
 
-        ##  Open the image cube.
+        ##  Create a set of stamp objects for each image.
+        ##  Set all 0.0 values to NaN in each image.
 
-        cube    = photo.cube( fits_file, type="sci" )
+        images  = [ photo.image( f ) for f in fits_list ]
+        for i in range( len(images) ):
+            images[i].data[ np.where(cube[i].data == 0.0) ]   = np.nan
 
-        for i in range(len(cube)):
-            cube[i].data[ np.where(cube[i].data == 0.0) ]   = np.nan
-
-        ##  Designate a stamp to each image.
-
-        stamps  = [ photo.stamp( image, S=2, unit="pix" ) for image in cube ]
+        stamps  = [ photo.stamp( image, S=2, unit="pix" ) for image in images ]
 
         ##  Find the best frame for all objects in the master catalog.
 
