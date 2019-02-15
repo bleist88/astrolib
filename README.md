@@ -11,7 +11,7 @@ This library contains a few astronomy related packages:
 
 This can be installed via **anaconda**.
 
-`conda install astrolib`
+`conda install -c bleist astrolib`
 
 If prefered, this packaged may be manually installed using this git.
 1.  Download from git:
