@@ -42,41 +42,49 @@ def sex( fits_file, sex_file, ext=0, detection=None, command='sex' ):
 
 def write_sex( fits_file, bsex_file, sex_file ):
     """
-    This function reads in a .bsex file to write a .sex file for an image with
-    details provided by the image manager.
+    This function creates a .sex file given the file paths to a FITS image and
+    a 'batch' .sex file, which contains general parameters to a batch of images.
     """
 
     ##  Read in both .bsex and .sex files.
 
-    image           = photo.cube( fits_file )
-    sex_configs     = io.read_configs( bsex_file )
+    image       = photo.image( fits_file )
+    sex_configs = io.read_configs( bsex_file )
 
-    ##  Handle file names.
+    ##  Handle file names.  Each output file will take the same name as the
+    ##  fits image but with different extensions.  The weight images should also
+    ##  have the same name as the science image but with _wht.fits as the ext.
+    ##  The various files include:
+    ##      in  - weight image (_wht.fits), flag image (_flg.fits)
+    ##      out - output catalog (.cat), check image (_chk.fits)
 
-    name        = io.parse_path( image.file_name[1] )
-
-    cat_file    = name + sex_configs["CATALOG_NAME"]
-    check_file  = name + sex_configs["CHECKIMAGE_NAME"]
+    name        = io.parse_path( fits_file )[1]
+    cat_file    = name + ".cat"
+    check_file  = name + "_chk.fits"
 
     if sex_configs["FLAG_IMAGE"] is not None:
-        flag_file   = name + sex_configs["FLAG_IMAGE"]
+        flag_file   = name + "_flg.fits"
     else:
         sex_configs.pop( "FLAG_IMAGE" )
         sex_configs.pop( "FLAG_TYPE" )
 
-    if sex_configs["WEIGHT_IMAGE"] is not None:
-        weight_file = name + sex_configs["WEIGHT_IMAGE"]
+    if sex_configs["WEIGHT_IMAGE"] is True:
+        weight_file = name + "_wht.fits"
     else:
         sex_configs.pop("WEIGHT_IMAGE")
         sex_configs.pop("WEIGHT_TYPE")
-        sex_configs.pop("WEIGHT_GAINE")
+        sex_configs.pop("WEIGHT_GAIN")
 
     ##  Set image specific variables.
 
-    sex_configs["PIXEL_SCALE"]      = image.pixel_scale
-    sex_configs["SEEING"]           = image.seeing
-    sex_configs["GAIN"]             = image.gain
-    sex_configs["MAG_ZEROPOINT"]    = image.mag_0
+    if sex_configs["PIXEL_SCALE"] is True:
+        sex_configs["PIXEL_SCALE"]      = image.pix_scale
+    if sex_configs["SEEING"] is True:
+        sex_configs["SEEING"]           = image.seeing
+    if sex_configs["GAIN"] is True:
+        sex_configs["GAIN"]             = image.gain
+    if sex_configs["MAG_ZEROPOINT"] is True:
+        sex_configs["MAG_ZEROPOINT"]    = image.mag_0
 
     ##  Write the new configurations as a .sex file.
 
@@ -86,7 +94,7 @@ def write_sex( fits_file, bsex_file, sex_file ):
 
 ##  ============================================================================
 
-def write_batch( sex_file, bsex_file, detection=None, command="sex" ):
+def write_batch( bsex_file, sex_file, detection=None, command="sex" ):
     """
     This function writes a batch of .sex files given a .bsex file and the .sex
     template.

@@ -259,86 +259,63 @@ def write_to( out_file, dstring, row_data ):
 
 def read_configs( configs_file ):
     """
-    Returns a dictionary of variables defined in a .cfg file.
+    Returns an ordered dictionary of variables defined in a .cfg file.
     """
 
     body    = io.get_body( configs_file )
-    configs = {} ##collections.OrderedDict()
+    configs = collections.OrderedDict()
 
-    ##  Create a key for each variable in the configs file.
-    ##  Any repeated variables are lists.
+    ##  Create a placeholder [] for each key.   This must be done in advanced so
+    ##  that if a key appears more than once, the values are simply appended to
+    ##  the orginal.
+
+    for i in range( len(body) ):
+        configs[ body[i][0] ]   = []
+
+    ##  Parse values.
 
     for i in range( len(body) ):
 
-        var = body[i][0]
+        ##  Create a list of values from the remainder of the line.
+        ##  Split this via any comma separators.
 
-        if var not in configs:
-            configs[ var ]  = None
-        else:
-            configs[ var ]  = []
+        values  = "".join( body[i][1:] ).split( "," )
 
-    ##  Find all variable names.  These are the leftmost value.
-    ##  All values are the remaining values.
-    ##  Multi-valued values are designated with ",".
+        ##  Typset each value in values.  This accepts:
+        ##      float, int, string, True, False, and None
 
-    for i in range( len(body) ):
+        for j in range( len(values) ):
 
-        var     = body[i][0]
-        multi   = False
+            if values[j].lower() == "true":
+                values[j] = True
 
-        ##  If multi-valued, split into a list.
+            elif values[j].lower() == "false":
+                values[j] = False
 
-        for j in range( len(body[i][1:]) ):
-            if "," in body[i][j]:
-                multi   = True
+            elif values[j].lower() == "none":
+                values[j] = None
 
-        if multi is True:
-            value   = " ".join( body[i][1:] )
-            value   = value.replace( " ", "" ).split( "," )
-
-        else:
-            value   = body[i][1]
-
-        ## Type set values.
-
-        if isinstance( value, list ):
-
-            for j in range( len(value) ):
-
-                if value[j].lower() in ["t","true","f","false"]:
-                    value[j]    = bool( value[j] )
-                elif value[j].lower() in ["none"]:
-                    value[j]    = None
-
-                else:
-                    try:
-                        value[j]    = float( value[j] )
-                        if value[j] % 1 == 0:
-                            value[j]    = int( value[j] )
-                    except:
-                        value[j]    = str( value[j] )
-
-        else:
-
-            if value.lower() in ["t","true","f","false"]:
-                value    = bool( value )
-            elif value.lower() in ["none"]:
-                value    = None
             else:
                 try:
-                    value    = float( value )
-                    if value % 1 == 0:
-                        value    = int( value )
+                    if "." in values[j]:
+                        values[j] = float( values[j] )
+                    else:
+                        values[j] = int( values[j] )
                 except:
-                    value   = str( value )
+                    values[j] = str( values[j] )
 
-        ## Finally add the variable and value to the dictionary.
+        ##  Add the key and the values to the dictionary.
 
-        if configs[ var ] is None:
-            configs[ var ] = value
+        for value in values:
+            configs[ key ].append( value )
 
-        else:
-            configs[ var ].append( value )
+    ##  If any values lists contain only 1 item, make the value singular.
+
+    for key in configs:
+        if len( configs[ key ] ) == 1:
+            configs[ key ]  = configs[ key ][0]
+
+    ##  Return.
 
     return configs
 

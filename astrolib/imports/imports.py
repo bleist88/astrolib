@@ -16,6 +16,7 @@ import  copy
 import  pickle
 import  gzip
 import  pyarrow
+import  collections
 import  warnings
 warnings.filterwarnings("ignore")
 
@@ -30,4 +31,3 @@ from    mpl_toolkits.mplot3d    import Axes3D
 
 from    astropy.io              import fits
 from    astropy.wcs             import WCS
-
