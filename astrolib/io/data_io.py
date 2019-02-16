@@ -279,6 +279,7 @@ def read_configs( configs_file ):
         ##  Create a list of values from the remainder of the line.
         ##  Split this via any comma separators.
 
+        key     = body[i][0]
         values  = "".join( body[i][1:] ).split( "," )
 
         ##  Typset each value in values.  This accepts:
