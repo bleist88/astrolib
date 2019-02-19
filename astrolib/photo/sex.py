@@ -6,7 +6,7 @@ from ._imports import *
 
 ##  ============================================================================
 
-var_changes     = { ##  keyname change replacements
+var_changes     = {     ##  Sextractor Key, Header Key
     "PIXEL_SCALE":      "pix_scale",
     "SEEING_FWHM":      "seeing",
     "GAIN":             "gain",
@@ -15,7 +15,7 @@ var_changes     = { ##  keyname change replacements
 
 ##  ============================================================================
 
-def sex( fits_file, sex_file, ext=0, detection=None, command='sex' ):
+def sex( fits_file, sex_file, detection=None, command='sex' ):
     """
     This function performs a SExtractor run on the .fits file using parameters
     from the .sex file.
@@ -26,13 +26,11 @@ def sex( fits_file, sex_file, ext=0, detection=None, command='sex' ):
     ##  Note!  SExtractor does not work if there is a space after the comma.
 
     if detection is not None:
-
         fits_file   = ",".join( [detection, fits_file] )
 
     command    += " " + fits_file
 
     if sex_file is not None:
-
         command    += ' -c ' + sex_file
 
     print( command )
@@ -46,69 +44,72 @@ def write_sex( fits_file, bsex_file, sex_file ):
     a 'batch' .sex file, which contains general parameters to a batch of images.
     """
 
-    ##  Read in both .bsex and .sex files.
+    ##  Read in the fits image and batch sex file.
 
-    image       = photo.image( fits_file )
-    sex_configs = io.read_configs( bsex_file )
+    image   = photo.image( fits_file )
+    configs = io.read_configs( bsex_file )
 
-    ##  Handle file names.  Each output file will take the same name as the
-    ##  fits image but with different extensions.  The weight images should also
+    ##  Handle file names.  Each output file will take the same name as the fits
+    ##  image but with different extensions.  The weight images should also
     ##  have the same name as the science image but with _wht.fits as the ext.
     ##  The various files include:
     ##      in  - weight image (_wht.fits), flag image (_flg.fits)
     ##      out - output catalog (.cat), check image (_chk.fits)
 
+    data_dir    = io.parse_path( fits_file )[0]
     name        = io.parse_path( fits_file )[1]
-    cat_file    = name + ".cat"
-    check_file  = name + "_chk.fits"
+    cat_file    = os.path.join( configs["CATALOG_NAME"], name + ".cat" )
+    check_file  = os.path.join( data_dir, name + "_chk.fits" )
 
-    if sex_configs["FLAG_IMAGE"] is not None:
-        flag_file   = name + "_flg.fits"
+    if configs["FLAG_IMAGE"] is True:
+        flag_file   = os.path.join( data_dir, name + "_flg.fits" )
     else:
-        sex_configs.pop( "FLAG_IMAGE" )
-        sex_configs.pop( "FLAG_TYPE" )
+        configs.pop( "FLAG_IMAGE" )
+        configs.pop( "FLAG_TYPE" )
 
-    if sex_configs["WEIGHT_IMAGE"] is True:
-        weight_file = name + "_wht.fits"
+    if configs["WEIGHT_IMAGE"] is True:
+        weight_file = os.path.join( data_dir, name + "_wht.fits" )
     else:
-        sex_configs.pop("WEIGHT_IMAGE")
-        sex_configs.pop("WEIGHT_TYPE")
-        sex_configs.pop("WEIGHT_GAIN")
+        configs.pop("WEIGHT_IMAGE")
+        configs.pop("WEIGHT_TYPE")
+        configs.pop("WEIGHT_GAIN")
 
-    ##  Set image specific variables.
+    ##  Use the image meta data in any case 'True' is used.
 
-    if sex_configs["PIXEL_SCALE"] is True:
-        sex_configs["PIXEL_SCALE"]      = image.pix_scale
-    if sex_configs["SEEING"] is True:
-        sex_configs["SEEING"]           = image.seeing
-    if sex_configs["GAIN"] is True:
-        sex_configs["GAIN"]             = image.gain
-    if sex_configs["MAG_ZEROPOINT"] is True:
-        sex_configs["MAG_ZEROPOINT"]    = image.mag_0
+    if configs["PIXEL_SCALE"] is True:
+        configs["PIXEL_SCALE"]      = image.pix_scale
+    if configs["SEEING"] is True:
+        configs["SEEING"]           = image.seeing
+    if configs["GAIN"] is True:
+        configs["GAIN"]             = image.gain
+    if configs["MAG_ZEROPOINT"] is True:
+        configs["MAG_ZEROPOINT"]    = image.mag_0
 
     ##  Write the new configurations as a .sex file.
 
     print( "Writing %s..." % sex_file )
-
-    io.write_configs( sex_file, sex_configs )
+    io.write_configs( sex_file, configs )
 
 ##  ============================================================================
 
-def write_batch( bsex_file, sex_file, detection=None, command="sex" ):
+def write_batch( fits_list, bsex_file, command="sex" ):
     """
     This function writes a batch of .sex files given a .bsex file and the .sex
     template.
     """
 
-    print( "Writing a .sex file for each image in the batch %s..." % bsex_file )
+    print( "Using the configurations from %s..." % bsex_file )
 
-    sex_configs    = Io.read( bsex_file )
+    ##  Use 'write_sex' for each fits image in the list.
+    ##  Create the '.sex' file using the batch sex file path and the image name.
 
-    for sex_config in sex_configs:
+    for fits_file in fits_list:
 
-        print( "..." + sex_config["fits_image"] + "." )
+        configs_dir = io.parse_path( bsex_file )[0]
+        image_name  = io.parse_path( fits_file )[1]
+        sex_file    = os.path.join( configs_dir, image_name + ".sex" )
 
-        write_sex( sex_file, sex_config )
+        write_sex( fits_file, bsex_file, sex_file )
 
 ##  ============================================================================
 
@@ -122,73 +123,12 @@ def batch_sex( sex_file, bsex_file, detection=None, command="sex" ):
 
     print( "Performing a batch SExtractor run on %s." % bsex_file )
 
-    sex_configs    = Io.read( bsex_file )
+    configs    = Io.read( bsex_file )
 
-    for sex_config in sex_configs:
+    for sex_config in configs:
 
         sex_file    = None  ##  I need to get this from what was written by
                             ##  write_sex().
 
         sex( sex_config["fits_image"], sex_file, detection=detection,
             command=command )
-
-##  ============================================================================
-
-# def write_sex( out_name, default=None, weight=False, flag=False ):
-#
-#     ##  Read in the default configs file.  If there is no default .sex file
-#     ##  then drop one using "sex -dd".
-#
-#     if default is None:
-#         print("Currently this action only supports having a default .sex.")
-#
-#     else:
-#         sex_configs     = io.read_configs( default )
-#
-#     ##  Handle output file names.
-#
-#     sex_configs["CATALOG_NAME"]     = sex_file.replace( ".sex", ".cat" )
-#     sex_configs["CHECKIMAGE_NAME"]  = sex_file.replace( ".sex", ".chk.fits" )
-#
-#     ##  Handle basic parameters.
-#
-#     sex_configs["PIXEL_SCALE"]      = self.pixel_scale
-#     sex_configs["SEEING"]           = self.seeing
-#
-#     ##  Handle weight and flag image options.
-#
-#     if weight is False or weight is None:
-#
-#         sex_configs.pop( "WEIGHT_IMAGE" )
-#         sex_configs.pop( "WEIGHT_TYPE" )
-#         sex_configs.pop( "WEIGHT_GAIN" )
-#
-#     else:
-#
-#         if weight in ["wht", "weight"]:
-#             sex_configs["WEIGHT_IMAGE"]     = self.wht_image
-#             sex_configs["WEIGHT_TYPE"]      = "MAP_WEIGHT"
-#
-#         elif weight in ["var", "variance"]:
-#             sex_configs["WEIGHT_IMAGE"]     = self.var_image
-#             sex_configs["WEIGHT_TYPE"]      = "MAP_VAR"
-#
-#         elif weight in ["bgr", "background"]:
-#             sex_configs["WEIGHT_IMAGE"]     = self.bgr_image
-#             sex_configs["WEIGHT_TYPE"]      = "BACKGROUND"
-#
-#         else:
-#             raise   Exception( "Weight type %s is not understood." % weight )
-#
-#     if flag is False or flag is None:
-#         sex_configs.pop( "FLAG_IMAGE" )
-#         sex_configs.pop( "FLAG_TYPE" )
-#
-#     else:
-#         sex_configs["FLAG_IMAGE"]   = flag
-#
-#     ##  Write the new configurations as a .sex file.
-#
-#     print( "Writing SExtractor configurations into %s..." % sex_file )
-#
-#     io.write_configs( sex_file, sex_configs )
