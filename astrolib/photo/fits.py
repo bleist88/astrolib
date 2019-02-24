@@ -14,12 +14,17 @@ from ._imports import *
 
 ##  ============================================================================
 
+header  = {
+}
+
+##  ============================================================================
+
 class image:
     """
     This class is used to house FITS images.
     """
 
-    def __init__( self, file_name, ext=0 ):
+    def __init__( self, file_name, ext=0, mode="readonly", init=False ):
 
         self.file_name  = file_name     ##  file name
         self.ext        = ext           ##  extension
@@ -57,11 +62,14 @@ class image:
 
         ##  Initialize.
 
-        self.open( file_name, ext=ext )
+        if init is False:
+            self.open( file_name, ext=ext, mode=mode )
+        elif init is True:
+            self.init( file_name )
 
     ##  ========================================================================
 
-    def open( self, file_name, ext=0 ):
+    def open( self, file_name, ext=0, mode="readonly" ):
         """
         Instantiates the object from a FITS file or FITS cube.
         """
@@ -71,7 +79,7 @@ class image:
         self.file_name      = file_name
         self.ext            = ext
 
-        self.fits       = fits.open( file_name )
+        self.fits       = fits.open( file_name, mode=mode )
         self.data       = self.fits[ext].data
         self.header     = self.fits[ext].header
 
@@ -102,7 +110,7 @@ class image:
         self.mag_0      = self.header["mag_0"]
         self.mag_0_err  = self.header["mag_0_err"]
 
-    ##  ====================================================================  ##
+    ##  ========================================================================
 
     def save( self, file_name=None, overwrite=False ):
         """
@@ -131,8 +139,32 @@ class image:
             file_name = self.file_name
 
         hdu_list.writeto( file_name, overwrite=False )
+        self.open( file_name )
 
-    ##  ====================================================================  ##
+    ##  ========================================================================
+
+    def init( self, file_name=None, overwrite=False ):
+        """
+        This initializes a fits image.
+        """
+
+        ##  Manage file name.
+
+        if file_name is None:
+            file_name = "temporary.fits"
+
+        ##  Initialize the FITS HDU.
+
+        primary_hdu = fits.PrimaryHDU( np.zeros(10,10) )
+        for key in header:
+            primary_hdu.header.set( key, header )
+        hdu_list    = fits.HDUList( [primary_hdu] )
+
+        ##  Save the FITS file.
+
+        hdu_list.writeto( fits_file, overwrite=overwrite )
+
+    ##  ========================================================================
 
     def display( self ):
 
