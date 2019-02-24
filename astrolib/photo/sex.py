@@ -29,16 +29,14 @@ def sex( fits_file, sex_file, detection=None, command='sex' ):
         fits_file   = ",".join( [detection, fits_file] )
 
     command    += " " + fits_file
-
-    if sex_file is not None:
-        command    += ' -c ' + sex_file
+    command    += ' -c ' + sex_file
 
     print( command )
     os.system( command )
 
 ##  ============================================================================
 
-def write_sex( fits_file, bsex_file, sex_file ):
+def write_sex( fits_file, bsex_file, sex_file, out_dir="." ):
     """
     This function creates a .sex file given the file paths to a FITS image and
     a 'batch' .sex file, which contains general parameters to a batch of images.
@@ -58,8 +56,14 @@ def write_sex( fits_file, bsex_file, sex_file ):
 
     data_dir    = io.parse_path( fits_file )[0]
     name        = io.parse_path( fits_file )[1]
-    cat_file    = os.path.join( configs["CATALOG_NAME"], name + ".cat" )
-    check_file  = os.path.join( data_dir, name + "_chk.fits" )
+
+    configs["CATALOG_NAME"] = os.path.join(
+        out_dir, name + ".cat"
+    )
+
+    configs["CHECKIMAGE_NAME"] = os.path.join(
+        out_dir, name + "_chk.fits"
+    )
 
     if configs["FLAG_IMAGE"] is True:
         flag_file   = os.path.join( data_dir, name + "_flg.fits" )
@@ -81,7 +85,7 @@ def write_sex( fits_file, bsex_file, sex_file ):
     if configs["SEEING_FWHM"] is True:
         configs["SEEING_FWHM"]      = image.seeing
     if configs["GAIN"] is True:
-        configs["GAIN"]             = image.gain
+        configs["GAIN"]             = image.gain * image.exp_time
     if configs["MAG_ZEROPOINT"] is True:
         configs["MAG_ZEROPOINT"]    = image.mag_0
 
@@ -92,7 +96,7 @@ def write_sex( fits_file, bsex_file, sex_file ):
 
 ##  ============================================================================
 
-def write_batch( fits_list, bsex_file, command="sex" ):
+def write_batch( fits_list, bsex_file, out_dir="." ):
     """
     This function writes a batch of .sex files given a .bsex file and the .sex
     template.
@@ -109,26 +113,4 @@ def write_batch( fits_list, bsex_file, command="sex" ):
         image_name  = io.parse_path( fits_file )[1]
         sex_file    = os.path.join( configs_dir, image_name + ".sex" )
 
-        write_sex( fits_file, bsex_file, sex_file )
-
-##  ============================================================================
-
-def batch_sex( sex_file, bsex_file, detection=None, command="sex" ):
-    """
-    This performs a "batch" SExtractor run on multiple images listed in the
-    'batch_cfg' file which overwrites the default configs in 'default_cfg'.
-    """
-
-    ##  Write a .sex file for each in the batch.
-
-    print( "Performing a batch SExtractor run on %s." % bsex_file )
-
-    configs    = Io.read( bsex_file )
-
-    for sex_config in configs:
-
-        sex_file    = None  ##  I need to get this from what was written by
-                            ##  write_sex().
-
-        sex( sex_config["fits_image"], sex_file, detection=detection,
-            command=command )
+        write_sex( fits_file, bsex_file, sex_file, out_dir=out_dir )
