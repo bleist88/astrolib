@@ -78,8 +78,8 @@ def write_sex( fits_file, bsex_file, sex_file ):
 
     if configs["PIXEL_SCALE"] is True:
         configs["PIXEL_SCALE"]      = image.pix_scale
-    if configs["SEEING"] is True:
-        configs["SEEING"]           = image.seeing
+    if configs["SEEING_FWHM"] is True:
+        configs["SEEING_FWHM"]      = image.seeing
     if configs["GAIN"] is True:
         configs["GAIN"]             = image.gain
     if configs["MAG_ZEROPOINT"] is True:
